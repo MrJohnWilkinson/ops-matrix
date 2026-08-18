@@ -454,7 +454,7 @@
   font-size: 12px;
 }
 
-.omx-dash-trail {
+.omx-dash-trail-row {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -488,20 +488,31 @@
 
 .omx-dash-ladder {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .omx-dash-ladder-day {
-  width: 30px;
-  height: 30px;
+  min-width: 36px;
+  min-height: 36px;
   border-radius: 4px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  gap: 2px;
+  padding: 2px 4px;
   font-weight: 700;
   color: #fff;
+}
+
+.omx-dash-ladder-date {
+  font-size: 9px;
+  opacity: 0.85;
+}
+
+.omx-dash-ladder-score {
+  font-size: 11px;
 }
 
 .omx-dash-unticked {
@@ -2835,6 +2846,19 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return "none";
   }
 
+  // The engine scores an untouched day as a genuine miss (num 0/den 1) by design, so a trail
+  // window with zero logged entries still comes back as a real, non-null 0 - correct for the
+  // scoring math, but indistinguishable from "nothing was ever logged" unless something also
+  // checks the raw entries. app.js owns display (INTERFACES.md section 4), so it makes that
+  // check here: no entry at all inside [windowStart, windowEnd] displays as no-data, never "0%".
+  function windowHasEntries(loggedDates, windowStart, windowEnd) {
+    for (var d in loggedDates) {
+      if (!hasOwn(loggedDates, d)) continue;
+      if (d >= windowStart && d <= windowEnd) return true;
+    }
+    return false;
+  }
+
   function buildDerived() {
     var doc = state.doc;
     var settings = doc.settings || {};
@@ -2878,6 +2902,14 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         });
       }
 
+      var activeOpIds = {};
+      for (j = 0; j < ops.length; j++) activeOpIds[ops[j].id] = true;
+      var loggedDates = {};
+      var allEntries = doc.entries || [];
+      for (j = 0; j < allEntries.length; j++) {
+        if (activeOpIds[allEntries[j].op]) loggedDates[allEntries[j].d] = true;
+      }
+
       var cells = {};
       var opStats = [];
       for (j = 0; j < ops.length; j++) {
@@ -2910,18 +2942,25 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         for (var td = 0; td < trailDefs.length; td++) {
           if (trailDefs[td] && trailDefs[td].id === t.trailId) { def = trailDefs[td]; break; }
         }
+        // Engine already nulls the score for insufficient-history / no-active-ops / all-bye
+        // windows (t.nullReason set). On top of that, treat a window with zero logged entries
+        // as no-data too, even though the engine legitimately computed a real 0 for it - a
+        // window where the user actually logged misses/adjusts keeps its real 0 and band colour.
+        var hasData = windowHasEntries(loggedDates, t.windowStart, t.windowEnd);
+        var trailScore = hasData ? t.score : null;
+        var trailBand = hasData ? t.band : null;
         trails.push({
           trailId: t.trailId,
           label: (def && def.label) || t.trailId,
           days: t.days,
           windowStart: t.windowStart,
           windowEnd: t.windowEnd,
-          score: t.score,
-          band: t.band,
-          tone: toneForBand(bands, t.band),
+          score: trailScore,
+          band: trailBand,
+          tone: toneForBand(bands, trailBand),
           scoredDays: t.scoredDays,
-          nullReason: t.nullReason,
-          display: pct(t.score),
+          nullReason: t.nullReason || (hasData ? null : "no-scorable-days"),
+          display: pct(trailScore),
           showOnDashboard: !!(def && def.showOnDashboard)
         });
       }
