@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ops Matrix GitHub Spike</title>
+<style>
+  :root { --bg:#f7f6f2; --card:#fff; --ink:#26251f; --dim:#77746a; --line:#e2e0d8; --ok:#2c7a3f; --bad:#b03434; --accent:#8a6d1f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1b17; --card:#26251f; --ink:#eceae2; --dim:#9a978c; --line:#3a3830; --ok:#5fbf77; --bad:#e07a7a; --accent:#d4b45a; } }
+  body { background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,sans-serif; max-width:640px; margin:1.5rem auto; padding:0 1rem; }
+  h1 { font-size:1.25rem; } h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--dim); margin:1.25rem 0 .5rem; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:6px; padding:.75rem 1rem; }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.4rem 0; border-bottom:1px solid var(--line); flex-wrap:wrap; } .row:last-child { border-bottom:none; }
+  input { font:inherit; background:var(--bg); color:var(--ink); border:1px solid var(--line); border-radius:5px; padding:.35rem .5rem; flex:1; min-width:10rem; }
+  button { font:inherit; background:none; border:1px solid var(--accent); color:var(--accent); border-radius:5px; padding:.35rem .9rem; cursor:pointer; } button:focus-visible { outline:2px solid var(--accent); }
+  .big { font-size:1.6rem; font-variant-numeric:tabular-nums; }
+  .chip { font-size:.75rem; padding:.1rem .5rem; border-radius:99px; border:1px solid var(--line); color:var(--dim); } .chip.ok { color:var(--ok); border-color:var(--ok); } .chip.bad { color:var(--bad); border-color:var(--bad); }
+  #log { font:12px/1.6 ui-monospace,monospace; color:var(--dim); max-height:14rem; overflow-y:auto; margin:.25rem 0 0; padding-left:1rem; }
+</style>
+</head>
+<body>
+<h1>Ops Matrix GitHub Spike</h1>
+<p style="color:var(--dim)">Round-trip test: this page (GitHub Pages) reads and writes <code>spike/state.json</code> in the private <code>ops-matrix-data</code> repo. Paste your fine-grained PAT below - it stays in this device's localStorage only.</p>
+
+<h2>Token (this device only)</h2>
+<section>
+  <div class="row"><input id="pat" type="password" placeholder="fine-grained PAT for ops-matrix-data" autocomplete="off"><button id="savepat">Save</button></div>
+  <div class="row"><span>Token status</span><span class="chip" id="patstate">none</span></div>
+</section>
+
+<h2>Shared state (via private repo)</h2>
+<section>
+  <div class="row"><span>Total ticks</span><span class="big" id="total">-</span></div>
+  <div class="row"><span>Per device</span><span id="perdev" style="font-variant-numeric:tabular-nums">-</span></div>
+  <div class="row"><span>This device: <b id="devid"></b>, unpushed: <b id="dirty">0</b></span><span><button id="tick">Tick</button> <button id="push">Push</button> <button id="pull">Pull</button></span></div>
+</section>
+
+<h2>Log</h2>
+<section><ol id="log"></ol></section>
+
+<script>
+  const OWNER = 'MrJohnWilkinson', REPO = 'ops-matrix-data', PATH = 'spike/state.json';
+  const API = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+  const $ = id => document.getElementById(id);
+  const log = (msg, ms) => { const li = document.createElement('li'); li.textContent = new Date().toISOString().slice(11, 19) + ' ' + msg + (ms != null ? ` (${Math.round(ms)}ms)` : ''); $('log').prepend(li); };
+  const b64enc = s => btoa(String.fromCharCode(...new TextEncoder().encode(s)));
+  const b64dec = s => new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0)));
+
+  const device = localStorage.spikeDevice || (localStorage.spikeDevice = 'dev-' + Math.random().toString(36).slice(2, 7));
+  $('devid').textContent = device;
+  let state = JSON.parse(localStorage.spikeState || '{"ticks":{}}');
+  let sha = null, dirty = +(localStorage.spikeDirty || 0);
+
+  const render = () => {
+    const t = state.ticks || {};
+    $('total').textContent = Object.values(t).reduce((a, b) => a + b, 0);
+    $('perdev').textContent = Object.entries(t).map(([d, n]) => `${d}:${n}`).join('  ') || '-';
+    $('dirty').textContent = dirty;
+  };
+  const patState = () => { const has = !!localStorage.spikePat; $('patstate').textContent = has ? 'saved on this device' : 'none'; $('patstate').className = 'chip ' + (has ? 'ok' : 'bad'); return has; };
+  const headers = () => ({ Authorization: 'Bearer ' + localStorage.spikePat, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' });
+
+  $('savepat').addEventListener('click', () => { if ($('pat').value) { localStorage.spikePat = $('pat').value; $('pat').value = ''; patState(); log('PAT saved to localStorage'); } });
+
+  $('tick').addEventListener('click', () => {
+    state.ticks[device] = (state.ticks[device] || 0) + 1; dirty++;
+    localStorage.spikeState = JSON.stringify(state); localStorage.spikeDirty = dirty;
+    render();
+  });
+
+  async function pull() {
+    if (!patState()) return log('pull: no PAT');
+    const t0 = performance.now();
+    const r = await fetch(API, { headers: headers() });
+    if (r.status === 404) { sha = null; return log('pull: no remote file yet', performance.now() - t0); }
+    if (!r.ok) return log('pull FAILED: HTTP ' + r.status, performance.now() - t0);
+    const j = await r.json(); sha = j.sha;
+    const remote = JSON.parse(b64dec(j.content));
+    // union-merge: per-device max, so local unpushed ticks survive a pull
+    for (const [d, n] of Object.entries(remote.ticks || {})) state.ticks[d] = Math.max(state.ticks[d] || 0, n);
+    localStorage.spikeState = JSON.stringify(state); render();
+    log('pull OK sha=' + sha.slice(0, 7), performance.now() - t0);
+  }
+
+  async function push(retried) {
+    if (!patState()) return log('push: no PAT');
+    const t0 = performance.now();
+    const body = { message: `spike tick from ${device}`, content: b64enc(JSON.stringify(state, null, 2)) };
+    if (sha) body.sha = sha;
+    const r = await fetch(API, { method: 'PUT', headers: headers(), body: JSON.stringify(body) });
+    if (r.ok) { const j = await r.json(); sha = j.content.sha; dirty = 0; localStorage.spikeDirty = 0; render(); return log('push OK sha=' + sha.slice(0, 7), performance.now() - t0); }
+    if ((r.status === 409 || r.status === 422) && !retried) { log('push conflict HTTP ' + r.status + ' - refetch, merge, retry'); await pull(); return push(true); }
+    log('push FAILED: HTTP ' + r.status, performance.now() - t0);
+  }
+
+  $('push').addEventListener('click', () => push(false));
+  $('pull').addEventListener('click', pull);
+  window.addEventListener('focus', () => { if (patState()) pull(); });
+
+  render();
+  if (patState()) pull(); else log('paste + save PAT to begin');
+</script>
+</body>
+</html>
