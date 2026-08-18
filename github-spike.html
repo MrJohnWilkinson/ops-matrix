@@ -71,7 +71,9 @@
   async function pull() {
     if (!patState()) return log('pull: no PAT');
     const t0 = performance.now();
-    const r = await fetch(API, { headers: headers() });
+    // cache:'no-store' is load-bearing - GitHub API GETs carry max-age=60, and a cached
+    // response hands the CAS retry a stale sha (spike finding 2026-08-18)
+    const r = await fetch(API, { headers: headers(), cache: 'no-store' });
     if (r.status === 404) { sha = null; return log('pull: no remote file yet', performance.now() - t0); }
     if (!r.ok) return log('pull FAILED: HTTP ' + r.status, performance.now() - t0);
     const j = await r.json(); sha = j.sha;
