@@ -3,141 +3,329 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#2f6fed">
 <title>Ops Matrix</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6fed'/%3E%3Cpath d='M18 34 L28 44 L46 22' fill='none' stroke='white' stroke-width='6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAABrElEQVR4nO3dwVEDMRBEUWfk0IicGExxBQxmpVH3TH9V9X32P87mdtv07m/vj6Tt6kbsLijqj+s24huM8CYjvsGIbzDiGwwAZwD1cSkjvsEAACB7xDcYAABkDwAAskd8gwEAQPYAACB7AACQPQCe7PMBIIj+7AEgjF+JAMCL8QEQxwdAHL8KIRbg6gNACFBxRySAy19/JMDKA2BY/CgAx/gxAK7xIwCc448HcI8PgDj+aIAO8ccCrDwAguKPA+gWfxRAx/jHAao+tmv8IwDVH985fjlAdYTu8S0AVmJ0j28DcCXKhPilAJVxVp46+DGAKoRJ8S0Bfgs1Lb4twE/BJsYvB9gVbmr8IwCrASfHPwagQFCHtQM4iaCOagtwCkEd1RqgGkEdtAVAFYI6ZiuA3QjqkC0BdiGov6E1wCqC+vYRAFcR1DePAvgvgvrWkQCvIqhvHA3wF4L6tgiArxjqG6IBpg8AALIHAADZAwCA7AGgBuD3o8XxAQAgdgAAkD3+k5JLfAAAiNs3ABDE8UEwiA+AAQAI4vggGMQHwSA+EAbhQTCJD4ZBdFBqYn8AqGg1q9rbd7AAAAAASUVORK5CYII=">
+<link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiT3BzIE1hdHJpeCIsInNob3J0X25hbWUiOiJPcHMgTWF0cml4Iiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMyZjZmZWQiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9wbmc7YmFzZTY0LGlWQk9SdzBLR2dvQUFBQU5TVWhFVWdBQUFHQUFBQUJnQ0FZQUFBRGltSGM0QUFBQnJFbEVRVlI0bk8zZHdWRURNUkJFVVdmazBJaWNHRXh4QlF4bXBWSDNUSDlWOVgzMlA4N21kdHYwN20vdmo2VHQ2a2JzTGlqcWorczI0aHVNOENZanZzR0liekRpR3d3QVp3RDFjU2tqdnNFQUFDQjd4RGNZQUFCa0R3QUFza2Q4Z3dFQVFQWUFBQ0I3QUFDUVBRQ2U3UE1CSUlqKzdBRWdqRitKQU1DTDhRRVF4d2RBSEw4S0lSYmc2Z05BQ0ZCeFJ5U0F5MTkvSk1ES0EyQlkvQ2dBeC9neEFLN3hJd0NjNDQ4SGNJOFBnRGorYUlBTzhjY0NyRHdBZ3VLUEErZ1dmeFJBeC9qSEFhbyt0bXY4SXdEVkg5ODVmamxBZFlUdThTMEFWbUowajI4RGNDWEtoUGlsQUpWeFZwNDYrREdBS29SSjhTMEJmZ3MxTGI0dHdFL0JKc1l2QjlnVmJtcjhJd0NyQVNmSFB3YWdRRkNIdFFNNGlhQ09hZ3R3Q2tFZDFScWdHa0VkdEFWQUZZSTZaaXVBM1FqcWtDMEJkaUdvdjZFMXdDcUMrdllSQUZjUjFEZVBBdmd2Z3ZyV2tRQ3ZJcWh2SEEzd0Y0TDZ0Z2lBcnhqcUc2SUJwZzhBQUxJSEFBRFpBd0NBN0FHZ0J1RDNvOFh4QVFBZ2RnQUFrRDMrazVKTGZBQUFpTnMzQUJERThVRXdpQStBQVFBSTR2Z2dHTVFId1NBK0VBYmhRVENKRDRaQmRGQnFZbjhBcUdnMXE5cmJkN0FBQUFBQVNVVk9SSzVDWUlJPSIsInNpemVzIjoiOTZ4OTYiLCJ0eXBlIjoiaW1hZ2UvcG5nIn1dfQ==">
 <style>
-/* Ops Matrix design system. Everything scoped under .omx - no bare element selectors,
-   no !important, no @import. Per-view prefixes: .omx-grid-*, .omx-mob-*, .omx-dash-*, .omx-app-*,
-   plus the shared .omx-tone-* / .omx-band-* utilities. */
+/* Ops Matrix design system - v2.0.0_2026-08-18_1935.
+   Implements the class census in src/INTERFACES.md section 6 exactly: every census class has a rule
+   here, and no rule here names a class the census does not carry. Everything is scoped under .omx -
+   no bare element selectors outside .omx, no priority overrides, no stylesheet includes, no web fonts.
 
+   Per-view prefixes: .omx-app-* (shell, banner, settings), .omx-grid-*, .omx-mob-*, .omx-dash-*,
+   plus the three shared dynamic families .omx-tone-{t}, .omx-band-{i}, .omx-code-{i}.
+
+   Colours, font sizes and the spacing ladder are declared ONCE, inside the token block below.
+   Nothing outside that block may name a colour, and every type size is set from a scale token. */
+
+/* @tokens:start */
 .omx {
+  /* type: system stack only */
   --omx-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --omx-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --omx-bg:#fff; --omx-surface:#f6f7f9; --omx-border:#d8dce2;
-  --omx-text:#14171a; --omx-text-dim:#5b6570; --omx-accent:#2f6fed;
-  /* band fills - INDEXED, because band ids are user data. 0 = lowest band */
-  --omx-band-0:#d64545; --omx-band-1:#d98324; --omx-band-2:#c9a227;
-  --omx-band-3:#2e9e5b; --omx-band-4:#2e9e5b; --omx-band-5:#2e9e5b;
-  /* tone grammar - what the views actually use */
-  --omx-green:#2e9e5b; --omx-amber:#d98324; --omx-red:#d64545; --omx-none:#9aa4af;
-  --omx-target-line:#2f6fed;
-  /* code cell fills, keyed by code letter */
-  --omx-code-T:#d7f0e0; --omx-code-W:#bfe6cd; --omx-code-C:#f6ddd6;
-  --omx-code-B:#e8eaed; --omx-code-blank:transparent;
-  /* sync banner states */
-  --omx-sync-synced:#2e9e5b; --omx-sync-dirty:#d98324; --omx-sync-syncing:#2f6fed;
-  --omx-sync-offline:#5b6570; --omx-sync-token:#d64545; --omx-sync-conflict:#d64545;
 
+  /* type scale - five steps; every font-size in this file is one of these */
+  --omx-fs-xs: 11px;
+  --omx-fs-sm: 12px;
+  --omx-fs-md: 14px;
+  --omx-fs-lg: 18px;
+  --omx-fs-xl: 28px;
+
+  /* spacing ladder - 4px base */
+  --omx-sp-1: 4px;
+  --omx-sp-2: 8px;
+  --omx-sp-3: 12px;
+  --omx-sp-4: 16px;
+  --omx-sp-5: 24px;
+  --omx-sp-6: 32px;
+
+  /* shape */
   --omx-radius: 6px;
-  --omx-gap: 8px;
-  --omx-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  --omx-radius-lg: 10px;
+  --omx-radius-pill: 999px;
+
+  /* surfaces and ink - LIGHT is the base palette */
+  --omx-bg: #ffffff;
+  --omx-surface: #f6f7f9;
+  --omx-surface-2: #eceff3;
+  --omx-border: #d8dce2;
+  --omx-border-strong: #b9c0c9;
+  --omx-text: #14171a;
+  --omx-text-dim: #5b6570;
+  --omx-accent: #2f6fed;
+  --omx-on-accent: #ffffff;
+  --omx-target-line: #2f6fed;
+
+  /* tone grammar - what the views actually use */
+  --omx-green: #2e9e5b;
+  --omx-amber: #c9761b;
+  --omx-red: #d64545;
+  --omx-none: #8a94a0;
+
+  /* tone TINTS - the fill half of the tone grammar (ladder segments, trail chips) */
+  --omx-tint-green: rgba(46, 158, 91, 0.16);
+  --omx-tint-amber: rgba(201, 118, 27, 0.18);
+  --omx-tint-red: rgba(214, 69, 69, 0.15);
+  --omx-tint-none: rgba(138, 148, 160, 0.12);
+
+  /* band fills - INDEXED, because band ids are user data. 0 = lowest band */
+  --omx-band-0: #d64545;
+  --omx-band-1: #c9761b;
+  --omx-band-2: #c9a227;
+  --omx-band-3: #2e9e5b;
+  --omx-band-4: #2e9e5b;
+  --omx-band-5: #2e9e5b;
+
+  /* code cell fills - SLOT-INDEXED, because the code table is user data (canon 11) */
+  --omx-code-0: #d7f0e0;
+  --omx-code-1: #bfe6cd;
+  --omx-code-2: #f7e0d6;
+  --omx-code-3: #e6e9ee;
+  --omx-code-4: #e2e0f5;
+  --omx-code-5: #fdf0c8;
+  --omx-code-6: #d9eef8;
+  --omx-code-7: #f2dfef;
+
+  /* sync pill states */
+  --omx-sync-synced: #2e9e5b;
+  --omx-sync-dirty: #c9761b;
+  --omx-sync-syncing: #2f6fed;
+  --omx-sync-offline: #5b6570;
+  --omx-sync-token: #d64545;
+  --omx-sync-conflict: #d64545;
+
+  /* surface accents */
+  --omx-today-tint: rgba(47, 111, 237, 0.08);
+  --omx-weekend-tint: rgba(20, 23, 26, 0.045);
+  --omx-cell-hover: rgba(47, 111, 237, 0.16);
+  --omx-overlay: rgba(255, 255, 255, 0.18);
+  --omx-overlay-border: rgba(255, 255, 255, 0.45);
+  --omx-shadow: 0 1px 2px rgba(20, 23, 26, 0.08);
+  --omx-shadow-card: 0 1px 3px rgba(20, 23, 26, 0.10);
+  --omx-drop-line: #2f6fed;
 
   font-family: var(--omx-font);
+  font-size: var(--omx-fs-md);
   color: var(--omx-text);
   background: var(--omx-bg);
   box-sizing: border-box;
-  min-height: 100vh;
+  /* The shell IS the viewport: fixed and inset to 0 so the flex chain below it is
+     viewport-bounded on both axes. Without this the page itself scrolls and every
+     position:sticky inside a view scrolls out of sight with it. */
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 @media (prefers-color-scheme: dark) {
   .omx {
-    --omx-bg:#14171a; --omx-surface:#1d2126;
-    --omx-border:#2c323a; --omx-text:#eceff3; --omx-text-dim:#9aa4af;
-    /* band+tone hues unchanged */
+    --omx-bg: #14171a;
+    --omx-surface: #1d2126;
+    --omx-surface-2: #23282f;
+    --omx-border: #2c323a;
+    --omx-border-strong: #3a424c;
+    --omx-text: #eceff3;
+    --omx-text-dim: #9aa4af;
+    --omx-accent: #4f89f5;
+    --omx-on-accent: #ffffff;
+    --omx-target-line: #4f89f5;
+
+    --omx-green: #3fb771;
+    --omx-amber: #e08b2a;
+    --omx-red: #e35d5d;
+    --omx-none: #7d8794;
+
+    --omx-tint-green: rgba(63, 183, 113, 0.22);
+    --omx-tint-amber: rgba(224, 139, 42, 0.24);
+    --omx-tint-red: rgba(227, 93, 93, 0.22);
+    --omx-tint-none: rgba(125, 135, 148, 0.18);
+
+    --omx-band-0: #e35d5d;
+    --omx-band-1: #e08b2a;
+    --omx-band-2: #d3b03a;
+    --omx-band-3: #3fb771;
+    --omx-band-4: #3fb771;
+    --omx-band-5: #3fb771;
+
+    --omx-code-0: #1e4433;
+    --omx-code-1: #205a3c;
+    --omx-code-2: #4a2f28;
+    --omx-code-3: #2a3038;
+    --omx-code-4: #33305a;
+    --omx-code-5: #4a4020;
+    --omx-code-6: #1e3d4d;
+    --omx-code-7: #452a41;
+
+    --omx-sync-synced: #3fb771;
+    --omx-sync-dirty: #e08b2a;
+    --omx-sync-syncing: #4f89f5;
+    --omx-sync-offline: #7d8794;
+    --omx-sync-token: #e35d5d;
+    --omx-sync-conflict: #e35d5d;
+
+    --omx-today-tint: rgba(79, 137, 245, 0.16);
+    --omx-weekend-tint: rgba(236, 239, 243, 0.05);
+    --omx-cell-hover: rgba(79, 137, 245, 0.24);
+    --omx-overlay: rgba(255, 255, 255, 0.14);
+    --omx-overlay-border: rgba(255, 255, 255, 0.35);
+    --omx-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --omx-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5);
+    --omx-drop-line: #4f89f5;
   }
 }
+/* @tokens:end */
 
-.omx *, .omx *::before, .omx *::after { box-sizing: inherit; }
+/* ---------------------------------------------------------------------- */
+/* Base                                                                   */
+/* ---------------------------------------------------------------------- */
+
+.omx *,
+.omx *::before,
+.omx *::after { box-sizing: inherit; }
 
 .omx :where(button, input, select, textarea) {
   font-family: inherit;
-  font-size: 14px;
+  font-size: var(--omx-fs-md);
   color: var(--omx-text);
   background: var(--omx-bg);
   border: 1px solid var(--omx-border);
   border-radius: var(--omx-radius);
-  padding: 6px 10px;
+  padding: var(--omx-sp-1) var(--omx-sp-2);
 }
 
-.omx button {
+.omx :where(button) {
   cursor: pointer;
   background: var(--omx-surface);
 }
 
-.omx button:hover {
-  background: var(--omx-border);
+.omx :where(button):hover { border-color: var(--omx-border-strong); }
+
+.omx :where(button, a, input, select, textarea):focus-visible {
+  outline: 2px solid var(--omx-accent);
+  outline-offset: 1px;
 }
 
-.omx table {
-  border-collapse: collapse;
+.omx :where(h2, h3, p, ul) { margin: 0; }
+
+.omx :where(ul) { padding-left: var(--omx-sp-4); }
+
+.omx :where(table) {
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 /* ---------------------------------------------------------------------- */
-/* Shared tone / band utilities                                           */
-/* ---------------------------------------------------------------------- */
-
-.omx-tone-green { color: var(--omx-green); }
-.omx-tone-amber { color: var(--omx-amber); }
-.omx-tone-red   { color: var(--omx-red); }
-.omx-tone-none  { color: var(--omx-none); }
-
-.omx-band-0 { background: var(--omx-band-0); }
-.omx-band-1 { background: var(--omx-band-1); }
-.omx-band-2 { background: var(--omx-band-2); }
-.omx-band-3 { background: var(--omx-band-3); }
-.omx-band-4 { background: var(--omx-band-4); }
-.omx-band-5 { background: var(--omx-band-5); }
-
-/* ---------------------------------------------------------------------- */
-/* Shell: nav, sync banner, view containers                               */
+/* Shell: nav row, sync pill, view containers                             */
 /* ---------------------------------------------------------------------- */
 
 .omx-app-nav {
   display: flex;
-  gap: var(--omx-gap);
-  padding: 10px 14px;
+  align-items: center;
+  gap: var(--omx-sp-3);
+  padding: var(--omx-sp-2) var(--omx-sp-4);
   border-bottom: 1px solid var(--omx-border);
   background: var(--omx-surface);
+  position: sticky;
+  top: 0;
+  z-index: 60;
   flex-wrap: wrap;
 }
 
+.omx-app-nav-brand {
+  font-size: var(--omx-fs-md);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.omx-app-nav-tabs {
+  display: flex;
+  gap: var(--omx-sp-1);
+}
+
 .omx-app-nav-btn {
+  font-size: var(--omx-fs-md);
   font-weight: 600;
+  padding: var(--omx-sp-1) var(--omx-sp-3);
 }
 
 .omx-app-nav-btn[data-active="true"] {
   background: var(--omx-accent);
-  color: #fff;
+  color: var(--omx-on-accent);
   border-color: var(--omx-accent);
 }
 
-.omx-app-sync-banner {
+.omx-app-sync-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px;
-  font-size: 13px;
-  border-bottom: 1px solid var(--omx-border);
-  color: #fff;
-  background: var(--omx-sync-offline);
+  gap: var(--omx-sp-2);
+  margin-left: auto;
+  padding: var(--omx-sp-1) var(--omx-sp-3);
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius-pill);
+  background: var(--omx-bg);
+  color: var(--omx-text-dim);
+  font-size: var(--omx-fs-sm);
+  /* never a banner: the pill is content-sized and docked right, on whichever
+     nav line it lands on (INTERFACES.md 8.2, banner rule) */
+  flex: 0 0 auto;
+  align-self: center;
+  max-width: 100%;
 }
 
-.omx-app-sync-banner[data-state="synced"]           { background: var(--omx-sync-synced); }
-.omx-app-sync-banner[data-state="dirty"]             { background: var(--omx-sync-dirty); }
-.omx-app-sync-banner[data-state="syncing"]           { background: var(--omx-sync-syncing); }
-.omx-app-sync-banner[data-state="offline"]           { background: var(--omx-sync-offline); }
-.omx-app-sync-banner[data-state="token-needed"]      { background: var(--omx-sync-token); }
-.omx-app-sync-banner[data-state="conflict-retrying"] { background: var(--omx-sync-conflict); }
+.omx-app-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--omx-radius-pill);
+  background: var(--omx-sync-offline);
+  flex: 0 0 auto;
+}
 
-.omx-app-sync-message { flex: 1 1 auto; }
+.omx-app-sync-pill[data-state="synced"] .omx-app-sync-dot            { background: var(--omx-sync-synced); }
+.omx-app-sync-pill[data-state="dirty"] .omx-app-sync-dot             { background: var(--omx-sync-dirty); }
+.omx-app-sync-pill[data-state="syncing"] .omx-app-sync-dot           { background: var(--omx-sync-syncing); }
+.omx-app-sync-pill[data-state="offline"] .omx-app-sync-dot           { background: var(--omx-sync-offline); }
+.omx-app-sync-pill[data-state="token-needed"] .omx-app-sync-dot      { background: var(--omx-on-accent); }
+.omx-app-sync-pill[data-state="conflict-retrying"] .omx-app-sync-dot { background: var(--omx-sync-conflict); }
 
-.omx-app-sync-dirty { font-variant-numeric: tabular-nums; opacity: 0.9; }
+/* token-needed is the one loud state: it must survive being ignored mid-use */
+.omx-app-sync-pill[data-state="token-needed"] {
+  background: var(--omx-sync-token);
+  border-color: var(--omx-sync-token);
+  color: var(--omx-on-accent);
+  font-weight: 600;
+}
+
+.omx-app-sync-pill[data-state="conflict-retrying"] { border-color: var(--omx-sync-conflict); }
+
+.omx-app-sync-message {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 32ch;
+}
+
+.omx-app-sync-dirty {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--omx-fs-xs);
+  opacity: 0.9;
+}
 
 .omx-app-sync-token-btn {
-  background: rgba(255,255,255,0.18);
-  color: #fff;
-  border-color: rgba(255,255,255,0.4);
+  font-size: var(--omx-fs-xs);
+  font-weight: 600;
+  padding: 2px var(--omx-sp-2);
+  background: var(--omx-overlay);
+  color: var(--omx-on-accent);
+  border-color: var(--omx-overlay-border);
 }
 
 .omx-app-main {
@@ -151,392 +339,917 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-}
-
-.omx[data-view="grid"] #omx-view-grid,
-.omx[data-view="mobile"] #omx-view-mobile,
-.omx[data-view="scoreboard"] #omx-view-scoreboard,
-.omx[data-view="settings"] #omx-view-settings {
   display: flex;
   flex-direction: column;
 }
 
-/* Desktop grid is never mobile-constrained; each view is purpose-built and shares only tokens. */
+.omx-app-view-container[hidden] { display: none; }
 
-/* ---------------------------------------------------------------------- */
-/* Settings panel                                                         */
-/* ---------------------------------------------------------------------- */
-
-.omx-app-settings {
-  padding: 16px;
-  gap: 24px;
-  max-width: 860px;
+.omx-app-view-error {
+  padding: var(--omx-sp-4);
+  color: var(--omx-red);
+  font-size: var(--omx-fs-md);
 }
 
-.omx-app-settings-section {
+.omx-app-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Settings (app.js builds the whole panel)                               */
+/* ---------------------------------------------------------------------- */
+
+.omx-app-settings { padding: var(--omx-sp-4); }
+
+.omx-app-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: var(--omx-sp-4);
+  align-items: start;
+}
+
+.omx-app-settings-card {
   border: 1px solid var(--omx-border);
-  border-radius: var(--omx-radius);
-  padding: 14px 16px;
+  border-radius: var(--omx-radius-lg);
   background: var(--omx-surface);
+  box-shadow: var(--omx-shadow);
+  padding: var(--omx-sp-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-3);
+  min-width: 0;
 }
 
-.omx-app-settings-section h2 {
-  margin: 0 0 10px 0;
-  font-size: 15px;
+.omx-app-settings-card-wide { grid-column: 1 / -1; }
+
+.omx-app-settings-card-title {
+  font-size: var(--omx-fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
 }
 
+/* A field packs to its own content. The 180px basis belongs to the ROW context only -
+   as a direct child of a column-flex card it would be read as a 180px MAIN-axis
+   (i.e. vertical) basis and blow a phantom gap under every control. */
 .omx-app-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 10px;
-  max-width: 420px;
+  gap: var(--omx-sp-1);
+  min-width: 0;
+  flex: 0 0 auto;
 }
 
-.omx-app-field span {
-  font-size: 12px;
+.omx-app-field-label {
+  font-size: var(--omx-fs-sm);
   color: var(--omx-text-dim);
 }
+
+.omx-app-field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--omx-sp-3);
+  align-items: flex-end;
+}
+
+.omx-app-field-row .omx-app-field { flex: 1 1 180px; }
 
 .omx-app-help-text {
-  font-size: 12px;
+  font-size: var(--omx-fs-sm);
   color: var(--omx-text-dim);
-  max-width: 480px;
+  line-height: 1.5;
 }
 
-.omx-app-repeat-list {
+.omx-app-actions {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 10px;
-}
-
-.omx-app-repeat-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
   flex-wrap: wrap;
-  padding: 6px;
+  gap: var(--omx-sp-2);
+  align-items: center;
+}
+
+.omx-app-btn {
+  font-size: var(--omx-fs-md);
+  font-weight: 600;
+  padding: var(--omx-sp-1) var(--omx-sp-3);
+}
+
+.omx-app-btn-primary {
+  background: var(--omx-accent);
+  color: var(--omx-on-accent);
+  border-color: var(--omx-accent);
+}
+
+.omx-app-btn-danger {
+  color: var(--omx-red);
+  border-color: var(--omx-border-strong);
+  font-size: var(--omx-fs-sm);
+}
+
+.omx-app-table-host {
+  overflow-x: auto;
   border: 1px solid var(--omx-border);
   border-radius: var(--omx-radius);
   background: var(--omx-bg);
 }
+
+.omx-app-table {
+  width: 100%;
+  font-size: var(--omx-fs-sm);
+}
+
+.omx-app-table-head-row { background: var(--omx-surface-2); }
+
+.omx-app-table-head-cell {
+  text-align: left;
+  font-size: var(--omx-fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--omx-text-dim);
+  padding: var(--omx-sp-2) var(--omx-sp-1);
+  border-bottom: 1px solid var(--omx-border);
+}
+
+.omx-app-table-row { background: var(--omx-bg); }
+
+.omx-app-table-cell {
+  padding: var(--omx-sp-1);
+  border-bottom: 1px solid var(--omx-border);
+  vertical-align: middle;
+}
+
+/* Mini-table controls carry the browser's ~20ch intrinsic width, which is what pushed the
+   MIN / ON DASHBOARD columns past the card edge. Let them shrink with the column instead. */
+.omx-app-table-cell :where(input:not([type="checkbox"]), select) {
+  width: 100%;
+  min-width: 4ch;
+}
+
+/* --- drag and drop (categories, and items inside a category) ----------- */
+
+.omx-app-dnd-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-2);
+  position: relative;
+}
+
+.omx-app-dnd-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--omx-sp-2);
+  padding: var(--omx-sp-2);
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: var(--omx-bg);
+  min-width: 0;
+}
+
+.omx-app-dnd-row[data-dnd-scope="category"] { background: var(--omx-surface-2); }
+
+.omx-app-dnd-row[data-dragging="true"] {
+  opacity: 0.55;
+  border-color: var(--omx-accent);
+}
+
+.omx-app-dnd-row[data-lifted="true"] {
+  border-color: var(--omx-accent);
+  box-shadow: var(--omx-shadow-card);
+}
+
+.omx-app-dnd-handle {
+  flex: 0 0 auto;
+  width: 28px;
+  min-height: 28px;
+  padding: 0;
+  font-size: var(--omx-fs-md);
+  line-height: 1;
+  color: var(--omx-text-dim);
+  cursor: grab;
+  touch-action: none;
+}
+
+.omx-app-dnd-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-2);
+}
+
+.omx-app-dnd-indicator {
+  height: 2px;
+  border-radius: var(--omx-radius-pill);
+  background: var(--omx-drop-line);
+  margin: 0;
+}
+
+.omx-app-dnd-status { position: absolute; }
+
+.omx-app-new-op-name { flex: 1 1 200px; }
 
 .omx-app-export-link {
   display: inline-block;
-  padding: 6px 10px;
+  align-self: flex-start;
+  padding: var(--omx-sp-1) var(--omx-sp-3);
   border: 1px solid var(--omx-border);
   border-radius: var(--omx-radius);
-  background: var(--omx-surface);
+  background: var(--omx-bg);
   color: var(--omx-accent);
   text-decoration: none;
+  font-size: var(--omx-fs-md);
   font-weight: 600;
-  margin-bottom: 10px;
 }
 
 .omx-app-import-warnings {
-  font-size: 12px;
+  font-size: var(--omx-fs-sm);
   color: var(--omx-amber);
-  white-space: pre-wrap;
 }
 
+.omx-app-import-warning-count { font-weight: 700; }
+
+.omx-app-import-warning-list { margin-top: var(--omx-sp-1); }
+
+.omx-app-import-warning-item { line-height: 1.5; }
+
 /* ---------------------------------------------------------------------- */
-/* Grid view (desktop, dense)                                             */
+/* Grid view - ONE table, sticky on both axes                             */
 /* ---------------------------------------------------------------------- */
 
-.omx-grid-scroll {
-  overflow: auto;
+.omx-grid-root {
   flex: 1 1 auto;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.omx-grid-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: var(--omx-bg);
 }
 
 .omx-grid-table {
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 12px;
+  font-size: var(--omx-fs-sm);
   min-width: 100%;
 }
 
-.omx-grid-category-header {
+.omx-grid-head-row { height: 40px; }
+
+.omx-grid-corner-cell {
   position: sticky;
   top: 0;
-  z-index: 3;
-  background: var(--omx-surface);
-  padding: 8px 10px;
-  font-weight: 700;
-  border-bottom: 1px solid var(--omx-border);
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-  flex-wrap: wrap;
-}
-
-.omx-grid-category-header .omx-grid-today-score {
-  font-size: 16px;
-}
-
-.omx-grid-header-row th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--omx-surface);
-  border-bottom: 1px solid var(--omx-border);
-  padding: 4px 6px;
-  font-weight: 600;
-  white-space: nowrap;
-  text-align: center;
-}
-
-.omx-grid-header-row th.omx-grid-op-col {
-  position: sticky;
   left: 0;
-  z-index: 4;
+  z-index: 40;
+  background: var(--omx-surface);
+  border-bottom: 1px solid var(--omx-border-strong);
+  border-right: 1px solid var(--omx-border-strong);
+  min-width: 220px;
   text-align: left;
 }
 
-.omx-grid-header-row th[data-today="true"] {
-  outline: 2px solid var(--omx-target-line);
-  outline-offset: -2px;
+.omx-grid-date-cell {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--omx-surface);
+  border-bottom: 1px solid var(--omx-border-strong);
+  border-right: 1px solid var(--omx-border);
+  padding: var(--omx-sp-1) 2px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1.15;
 }
 
-.omx-grid-op-name {
+.omx-grid-date-cell[data-weekend="true"] { background: var(--omx-surface-2); }
+
+.omx-grid-date-cell[data-today="true"] {
+  background: var(--omx-today-tint);
+  box-shadow: inset 2px 0 0 var(--omx-target-line), inset -2px 0 0 var(--omx-target-line),
+    inset 0 2px 0 var(--omx-target-line);
+  color: var(--omx-accent);
+}
+
+.omx-grid-date-dow {
+  display: block;
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.omx-grid-date-label {
+  display: block;
+  font-size: var(--omx-fs-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-grid-stats-head-cell {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--omx-surface);
+  border-bottom: 1px solid var(--omx-border-strong);
+  border-left: 1px solid var(--omx-border-strong);
+  min-width: 56px;
+  padding: var(--omx-sp-1);
+}
+
+.omx-grid-category-row { height: 34px; }
+
+.omx-grid-category-cell {
+  background: var(--omx-surface-2);
+  border-top: 1px solid var(--omx-border-strong);
+  border-bottom: 1px solid var(--omx-border);
+  padding: 0;
+  text-align: left;
+}
+
+/* The divider row's content box spans the whole table. Only the LABEL is sticky:
+   a sticky box is clamped so it can never leave its containing block, so a sticky box
+   wider than the scrollport (the old inline-flex carrying the chips as well) stops
+   short of the left edge at full right scroll and clips its own first characters. */
+.omx-grid-category-inner {
+  display: flex;
+  align-items: baseline;
+  gap: var(--omx-sp-3);
+  min-width: 0;
+}
+
+.omx-grid-category-label {
   position: sticky;
   left: 0;
-  z-index: 1;
-  background: var(--omx-bg);
-  border-right: 1px solid var(--omx-border);
-  padding: 4px 8px;
-  white-space: nowrap;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  z-index: 10;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--omx-sp-3);
+  flex: 0 0 auto;
+  padding: var(--omx-sp-1) var(--omx-sp-3);
+  background: var(--omx-surface-2);
 }
 
-.omx-grid-op-name[data-excluded="true"] {
+.omx-grid-category-name {
+  font-size: var(--omx-fs-md);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.omx-grid-category-today {
+  font-size: var(--omx-fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-grid-trail-chip {
+  flex: 0 0 auto;
+  font-size: var(--omx-fs-xs);
+  font-weight: 600;
+  padding: 1px var(--omx-sp-2);
+  border-radius: var(--omx-radius-pill);
+  background: var(--omx-bg);
+  border: 1px solid var(--omx-border);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-grid-op-row { height: 30px; }
+
+.omx-grid-op-cell {
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  background: var(--omx-bg);
+  border-right: 1px solid var(--omx-border-strong);
+  border-bottom: 1px solid var(--omx-border);
+  padding: 0 var(--omx-sp-2);
+  min-width: 220px;
+  max-width: 220px;
+  text-align: left;
+  font-weight: 400;
+}
+
+.omx-grid-op-cell[data-excluded="true"] { color: var(--omx-text-dim); }
+
+.omx-grid-op-name {
+  display: inline-block;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  font-size: var(--omx-fs-sm);
+}
+
+.omx-grid-op-target {
+  margin-left: var(--omx-sp-2);
+  font-size: var(--omx-fs-xs);
   color: var(--omx-text-dim);
-  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-grid-cell-wrap {
+  padding: 0;
+  border-right: 1px solid var(--omx-border);
+  border-bottom: 1px solid var(--omx-border);
+}
+
+.omx-grid-cell-wrap[data-weekend="true"] { background: var(--omx-weekend-tint); }
+
+.omx-grid-cell-wrap[data-today="true"] {
+  background: var(--omx-today-tint);
+  box-shadow: inset 2px 0 0 var(--omx-target-line), inset -2px 0 0 var(--omx-target-line);
 }
 
 .omx-grid-cell {
-  border: 1px solid var(--omx-border);
-  width: 28px;
-  height: 26px;
+  display: block;
+  width: 32px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--omx-text);
   text-align: center;
+  font-family: var(--omx-mono);
+  font-size: var(--omx-fs-sm);
+  font-weight: 700;
+  line-height: 30px;
   cursor: pointer;
   user-select: none;
-  font-family: var(--omx-mono);
-  font-weight: 700;
 }
 
-.omx-grid-cell:hover {
+.omx-grid-cell:hover { background: var(--omx-cell-hover); }
+
+.omx-grid-cell:focus-visible {
   outline: 2px solid var(--omx-accent);
   outline-offset: -2px;
 }
 
-.omx-grid-cell[data-code="T"] { background: var(--omx-code-T); }
-.omx-grid-cell[data-code="W"] { background: var(--omx-code-W); }
-.omx-grid-cell[data-code="C"] { background: var(--omx-code-C); }
-.omx-grid-cell[data-code="B"] { background: var(--omx-code-B); }
-.omx-grid-cell[data-code=""]  { background: var(--omx-code-blank); }
+.omx-grid-stats-cell {
+  border-left: 1px solid var(--omx-border-strong);
+  border-bottom: 1px solid var(--omx-border);
+  background: var(--omx-surface);
+  padding: 0 var(--omx-sp-2);
+  text-align: right;
+}
 
-.omx-grid-trail-list {
-  display: flex;
-  gap: 10px;
-  font-weight: 400;
-  font-size: 12px;
+.omx-grid-stats-value {
+  font-size: var(--omx-fs-xs);
+  font-variant-numeric: tabular-nums;
   color: var(--omx-text-dim);
 }
 
 /* ---------------------------------------------------------------------- */
-/* Mobile view (phone, low friction)                                      */
+/* Mobile view - one centered column, 44px targets                        */
 /* ---------------------------------------------------------------------- */
 
+.omx-mob-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--omx-bg);
+}
+
+.omx-mob-column {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 var(--omx-sp-3) var(--omx-sp-6) var(--omx-sp-3);
+}
+
 .omx-mob-stepper {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--omx-border);
-  background: var(--omx-surface);
   position: sticky;
   top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--omx-sp-2);
+  min-height: 44px;
+  padding: var(--omx-sp-2) 0;
+  background: var(--omx-bg);
+  border-bottom: 1px solid var(--omx-border);
 }
 
-.omx-mob-stepper button {
+.omx-mob-step-btn {
   min-width: 44px;
   min-height: 44px;
-  font-size: 16px;
+  font-size: var(--omx-fs-md);
+  font-weight: 600;
+  flex: 0 0 auto;
 }
 
-.omx-mob-date-label {
+.omx-mob-step-date {
   flex: 1 1 auto;
   text-align: center;
+  line-height: 1.2;
+  min-width: 0;
+}
+
+.omx-mob-step-dow {
+  display: block;
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.omx-mob-step-label {
+  display: block;
+  font-size: var(--omx-fs-lg);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-mob-step-today {
+  min-height: 44px;
+  font-size: var(--omx-fs-sm);
+  font-weight: 600;
+  flex: 0 0 auto;
 }
 
 .omx-mob-progress {
-  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-1);
+  padding: var(--omx-sp-3) 0;
+}
+
+.omx-mob-progress-bar {
+  height: 6px;
+  border-radius: var(--omx-radius-pill);
+  background: var(--omx-surface-2);
+  overflow: hidden;
+}
+
+.omx-mob-progress-fill {
+  height: 100%;
+  background: var(--omx-accent);
+  border-radius: var(--omx-radius-pill);
+}
+
+.omx-mob-progress-text {
+  font-size: var(--omx-fs-sm);
   color: var(--omx-text-dim);
-  padding: 6px 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-mob-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-5);
 }
 
 .omx-mob-category {
-  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-2);
+}
+
+.omx-mob-category-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--omx-sp-2);
+  padding-bottom: var(--omx-sp-1);
+  border-bottom: 1px solid var(--omx-border);
 }
 
 .omx-mob-category-name {
+  font-size: var(--omx-fs-md);
   font-weight: 700;
-  margin-bottom: 6px;
+}
+
+.omx-mob-category-score {
+  font-size: var(--omx-fs-md);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .omx-mob-op-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--omx-sp-3);
   width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  margin-bottom: 6px;
+  min-height: 56px;
+  padding: var(--omx-sp-2) var(--omx-sp-2) var(--omx-sp-2) var(--omx-sp-3);
   border: 1px solid var(--omx-border);
   border-radius: var(--omx-radius);
   background: var(--omx-bg);
-  cursor: pointer;
   text-align: left;
-  font-size: 15px;
+  font-size: var(--omx-fs-md);
 }
 
-.omx-mob-op-row[data-code="T"] { background: var(--omx-code-T); }
-.omx-mob-op-row[data-code="W"] { background: var(--omx-code-W); }
-.omx-mob-op-row[data-code="C"] { background: var(--omx-code-C); }
-.omx-mob-op-row[data-code="B"] { background: var(--omx-code-B); }
-.omx-mob-op-row[data-code=""]  { background: var(--omx-bg); }
+.omx-mob-op-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.3;
+}
 
-.omx-mob-op-name { flex: 1 1 auto; }
-
+/* Fixed 44x44 - the chip must NOT grow with its label, or every row's right edge
+   jitters with the length of the code word. The label ellipsizes inside it, and the
+   chip is transparent so the row's slot-indexed code fill reads straight through. */
 .omx-mob-op-code {
-  font-family: var(--omx-mono);
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  padding: 0 2px;
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: transparent;
+  font-size: var(--omx-fs-xs);
   font-weight: 700;
-  min-width: 24px;
   text-align: center;
+  line-height: 42px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---------------------------------------------------------------------- */
-/* Scoreboard view (glanceable, one card per category)                    */
+/* Scoreboard - stat tiles, equal-height cards, tone ladder               */
 /* ---------------------------------------------------------------------- */
+
+.omx-dash-root {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-4);
+  padding: var(--omx-sp-4);
+}
+
+.omx-dash-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-3);
+}
+
+.omx-dash-date {
+  font-size: var(--omx-fs-sm);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.omx-dash-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--omx-sp-3);
+}
+
+.omx-dash-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-1);
+  padding: var(--omx-sp-3) var(--omx-sp-4);
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius-lg);
+  background: var(--omx-surface);
+}
+
+.omx-dash-stat-value {
+  font-size: var(--omx-fs-xl);
+  font-weight: 800;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-dash-stat-label {
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
 .omx-dash-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
-  padding: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--omx-sp-4);
 }
 
 .omx-dash-card {
-  border: 1px solid var(--omx-border);
-  border-radius: var(--omx-radius);
-  background: var(--omx-surface);
-  padding: 14px;
-  box-shadow: var(--omx-shadow);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--omx-sp-3);
+  padding: var(--omx-sp-4);
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius-lg);
+  background: var(--omx-surface);
+  box-shadow: var(--omx-shadow-card);
+  min-width: 0;
+}
+
+.omx-dash-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--omx-sp-2);
+  padding-bottom: var(--omx-sp-2);
+  border-bottom: 1px solid var(--omx-border);
 }
 
 .omx-dash-card-title {
+  font-size: var(--omx-fs-md);
   font-weight: 700;
-  font-size: 15px;
+  line-height: 1.25;
+  min-width: 0;
+}
+
+.omx-dash-card-count {
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .omx-dash-trails {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--omx-sp-2);
 }
 
 .omx-dash-trail-row {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 80px;
+  min-width: 0;
 }
 
 .omx-dash-trail-label {
+  font-size: var(--omx-fs-xs);
   color: var(--omx-text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .omx-dash-trail-value {
+  font-size: var(--omx-fs-lg);
   font-weight: 700;
-  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
 .omx-dash-today {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-}
-
-.omx-dash-today-value {
-  font-size: 28px;
-  font-weight: 800;
-}
-
-.omx-dash-today-target {
-  font-size: 12px;
-  color: var(--omx-text-dim);
-}
-
-.omx-dash-ladder {
-  display: flex;
-  gap: 6px;
+  gap: var(--omx-sp-2);
   flex-wrap: wrap;
 }
 
+.omx-dash-today-label {
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.omx-dash-today-value {
+  font-size: var(--omx-fs-xl);
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-dash-today-target {
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-dash-unticked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-sp-1);
+  font-size: var(--omx-fs-sm);
+}
+
+.omx-dash-unticked-title {
+  font-size: var(--omx-fs-xs);
+  color: var(--omx-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.omx-dash-unticked-list {
+  margin: 0;
+  color: var(--omx-text-dim);
+}
+
+.omx-dash-unticked-item { line-height: 1.5; }
+
+.omx-dash-unticked-empty {
+  color: var(--omx-green);
+  font-weight: 600;
+}
+
+.omx-dash-ladder {
+  margin-top: auto;
+  padding-top: var(--omx-sp-2);
+  border-top: 1px solid var(--omx-border);
+}
+
+.omx-dash-ladder-strip {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--omx-sp-1);
+}
+
 .omx-dash-ladder-day {
-  min-width: 36px;
-  min-height: 36px;
-  border-radius: 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  padding: 2px 4px;
+  min-height: 44px;
+  padding: var(--omx-sp-1) 2px;
+  border-radius: var(--omx-radius);
+  border: 1px solid currentColor;
+  background: var(--omx-bg);
+}
+
+.omx-dash-ladder-dow {
+  font-size: var(--omx-fs-xs);
   font-weight: 700;
-  color: #fff;
+  text-transform: uppercase;
+  opacity: 0.8;
 }
 
-.omx-dash-ladder-date {
-  font-size: 9px;
-  opacity: 0.85;
+.omx-dash-ladder-value {
+  font-size: var(--omx-fs-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
-.omx-dash-ladder-score {
-  font-size: 11px;
-}
+/* ---------------------------------------------------------------------- */
+/* Shared dynamic families: tone, band, code                              */
+/*                                                                        */
+/* LAST ON PURPOSE. Every one of these is a single-class selector, so it   */
+/* ties on specificity with the component rule it has to paint over        */
+/* (.omx-grid-cell, .omx-mob-op-row, the :where(button) base - all of      */
+/* which declare their own background). Source order is the only tie-      */
+/* breaker available without !important, so the fill families come last.   */
+/* ---------------------------------------------------------------------- */
 
-.omx-dash-unticked {
-  font-size: 12px;
-  color: var(--omx-text-dim);
-}
+.omx-tone-green { color: var(--omx-green); }
+.omx-tone-amber { color: var(--omx-amber); }
+.omx-tone-red   { color: var(--omx-red); }
+.omx-tone-none  { color: var(--omx-none); }
 
-.omx-dash-unticked-list {
-  margin: 4px 0 0 0;
-  padding-left: 16px;
-}
+/* The fill half of the tone grammar: a toned surface reads as a filled chip, not as a
+   hairline outline that samples the same as the card behind it. */
+.omx-dash-ladder-day.omx-tone-green { background: var(--omx-tint-green); border-color: var(--omx-green); }
+.omx-dash-ladder-day.omx-tone-amber { background: var(--omx-tint-amber); border-color: var(--omx-amber); }
+.omx-dash-ladder-day.omx-tone-red   { background: var(--omx-tint-red); border-color: var(--omx-red); }
+.omx-dash-ladder-day.omx-tone-none  { background: var(--omx-tint-none); border-color: var(--omx-none); }
 
-.omx-dash-overall {
-  padding: 14px;
-  border-bottom: 1px solid var(--omx-border);
-  display: flex;
-  gap: 20px;
-  align-items: baseline;
-  flex-wrap: wrap;
-}
+.omx-grid-trail-chip.omx-tone-green { background: var(--omx-tint-green); border-color: var(--omx-green); }
+.omx-grid-trail-chip.omx-tone-amber { background: var(--omx-tint-amber); border-color: var(--omx-amber); }
+.omx-grid-trail-chip.omx-tone-red   { background: var(--omx-tint-red); border-color: var(--omx-red); }
+.omx-grid-trail-chip.omx-tone-none  { background: var(--omx-tint-none); border-color: var(--omx-none); }
 
-.omx-dash-overall-score {
-  font-size: 22px;
-  font-weight: 800;
+.omx-band-0 { background: var(--omx-band-0); }
+.omx-band-1 { background: var(--omx-band-1); }
+.omx-band-2 { background: var(--omx-band-2); }
+.omx-band-3 { background: var(--omx-band-3); }
+.omx-band-4 { background: var(--omx-band-4); }
+.omx-band-5 { background: var(--omx-band-5); }
+
+.omx-code-0 { background: var(--omx-code-0); }
+.omx-code-1 { background: var(--omx-code-1); }
+.omx-code-2 { background: var(--omx-code-2); }
+.omx-code-3 { background: var(--omx-code-3); }
+.omx-code-4 { background: var(--omx-code-4); }
+.omx-code-5 { background: var(--omx-code-5); }
+.omx-code-6 { background: var(--omx-code-6); }
+.omx-code-7 { background: var(--omx-code-7); }
+
+/* ---------------------------------------------------------------------- */
+/* Narrow viewports - phone widths down to 320px                          */
+/* ---------------------------------------------------------------------- */
+
+@media (max-width: 560px) {
+  .omx-app-nav { gap: var(--omx-sp-2); }
+
+  /* the pill stays a pill: short message, no full-width banner on the wrapped line */
+  .omx-app-sync-message { max-width: 13ch; }
+
+  /* the divider row keeps its sticky label; the trail chips are the first thing to go
+     rather than run off the right edge */
+  .omx-grid-trail-chip { display: none; }
+
+  .omx-app-settings-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -544,123 +1257,26 @@
 <div id="omx-app" class="omx" data-viewmode="auto" data-view="grid">
 
   <nav id="omx-nav" class="omx-app-nav">
-    <button type="button" class="omx-app-nav-btn" data-view-btn="grid">Grid</button>
-    <button type="button" class="omx-app-nav-btn" data-view-btn="mobile">Mobile</button>
-    <button type="button" class="omx-app-nav-btn" data-view-btn="scoreboard">Scoreboard</button>
-    <button type="button" class="omx-app-nav-btn" data-view-btn="settings">Settings</button>
+    <span class="omx-app-nav-brand">Ops Matrix</span>
+    <div class="omx-app-nav-tabs">
+      <button type="button" class="omx-app-nav-btn" data-view-btn="grid">Grid</button>
+      <button type="button" class="omx-app-nav-btn" data-view-btn="mobile">Mobile</button>
+      <button type="button" class="omx-app-nav-btn" data-view-btn="scoreboard">Scoreboard</button>
+      <button type="button" class="omx-app-nav-btn" data-view-btn="settings">Settings</button>
+    </div>
+    <div id="omx-sync-banner" class="omx-app-sync-pill" data-state="offline">
+      <span class="omx-app-sync-dot"></span>
+      <span class="omx-app-sync-message"></span>
+      <span class="omx-app-sync-dirty"></span>
+      <button type="button" class="omx-app-sync-token-btn" hidden>Settings</button>
+    </div>
   </nav>
-
-  <div id="omx-sync-banner" class="omx-app-sync-banner" data-state="offline">
-    <span class="omx-app-sync-message"></span>
-    <span class="omx-app-sync-dirty"></span>
-    <button type="button" class="omx-app-sync-token-btn" hidden>Go to Settings</button>
-  </div>
 
   <main class="omx-app-main">
     <div id="omx-view-grid" class="omx-app-view-container"></div>
     <div id="omx-view-mobile" class="omx-app-view-container" hidden></div>
     <div id="omx-view-scoreboard" class="omx-app-view-container" hidden></div>
-
-    <div id="omx-view-settings" class="omx-app-view-container omx-app-settings" hidden>
-
-      <section class="omx-app-settings-section" data-settings-section="connection">
-        <h2>Connection</h2>
-        <label class="omx-app-field">
-          <span>Personal access token</span>
-          <input type="password" id="omx-app-pat" autocomplete="off" spellcheck="false">
-        </label>
-        <button type="button" id="omx-app-pat-save">Save token</button>
-        <button type="button" id="omx-app-pat-test">Test</button>
-        <label class="omx-app-field">
-          <span>Repo owner</span>
-          <input type="text" id="omx-app-repo-owner" data-config-path="__local.repo.owner">
-        </label>
-        <label class="omx-app-field">
-          <span>Repo name</span>
-          <input type="text" id="omx-app-repo-name" data-config-path="__local.repo.name">
-        </label>
-        <label class="omx-app-field">
-          <span>File path</span>
-          <input type="text" id="omx-app-repo-path" data-config-path="__local.repo.path">
-        </label>
-        <label class="omx-app-field">
-          <span>Branch</span>
-          <input type="text" id="omx-app-repo-branch" data-config-path="__local.repo.branch">
-        </label>
-        <p class="omx-app-help-text">
-          Fine-grained PAT with Contents read/write on this one repo. Stored in this browser only,
-          never committed.
-        </p>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="scoring">
-        <h2>Scoring</h2>
-        <label class="omx-app-field">
-          <span>Target %</span>
-          <input type="number" min="0" max="100" id="omx-app-target"
-                 data-config-path="settings.scoring.target">
-        </label>
-        <div id="omx-app-bands" class="omx-app-repeat-list"></div>
-        <button type="button" id="omx-app-band-add">Add band</button>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="trails">
-        <h2>Trails</h2>
-        <div id="omx-app-trails" class="omx-app-repeat-list"></div>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="codes">
-        <h2>Codes</h2>
-        <div id="omx-app-codes" class="omx-app-repeat-list"></div>
-        <button type="button" id="omx-app-code-add">Add code</button>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="categories">
-        <h2>Categories and items</h2>
-        <div id="omx-app-categories" class="omx-app-repeat-list"></div>
-        <button type="button" id="omx-app-category-add">Add category</button>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="display">
-        <h2>Display</h2>
-        <label class="omx-app-field">
-          <span>Timezone (IANA)</span>
-          <input type="text" id="omx-app-timezone" data-config-path="settings.timezone">
-        </label>
-        <label class="omx-app-field">
-          <span>Date format</span>
-          <input type="text" id="omx-app-date-format" data-config-path="settings.dateFormat">
-        </label>
-        <label class="omx-app-field">
-          <span>Dashboard last N days</span>
-          <input type="number" min="1" id="omx-app-last-n-days"
-                 data-config-path="settings.dashboard.lastNDays">
-        </label>
-        <label class="omx-app-field">
-          <span>Grid days</span>
-          <input type="number" min="1" id="omx-app-grid-days" data-config-path="__local.grid.days">
-        </label>
-        <label class="omx-app-field">
-          <span>View mode</span>
-          <select id="omx-app-viewmode" data-config-path="__local.viewmode">
-            <option value="auto">Auto</option>
-            <option value="desktop">Desktop</option>
-            <option value="mobile">Mobile</option>
-          </select>
-        </label>
-      </section>
-
-      <section class="omx-app-settings-section" data-settings-section="data">
-        <h2>Data</h2>
-        <a id="omx-app-export" download class="omx-app-export-link">Export JSON</a>
-        <label class="omx-app-field">
-          <span>Import JSON</span>
-          <input type="file" id="omx-app-import" accept="application/json,.json">
-        </label>
-        <div id="omx-app-import-warnings" class="omx-app-import-warnings"></div>
-      </section>
-
-    </div>
+    <div id="omx-view-settings" class="omx-app-view-container omx-app-settings" hidden></div>
   </main>
 
 </div>
@@ -1444,6 +2060,10 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return new Date().toISOString();
   }
 
+  function entryKey(opId, dateIso) {
+    return opId + "|" + dateIso;
+  }
+
   function safeParse(str) {
     try {
       return JSON.parse(str);
@@ -1471,11 +2091,11 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     var entries = (doc && doc.entries) || [];
     for (i = 0; i < entries.length; i++) {
       var e = entries[i];
-      map[e.d + "|" + e.op] = e;
+      map[entryKey(e.op, e.d)] = e;
     }
     for (i = 0; i < changes.length; i++) {
       var c = changes[i];
-      var key = c.d + "|" + c.op;
+      var key = entryKey(c.op, c.d);
       if (c.c === null) {
         delete map[key];
       } else {
@@ -1494,7 +2114,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     // last write wins per (d, op), original order preserved
     var order = [], byKey = {}, i, key;
     for (i = 0; i < changes.length; i++) {
-      key = changes[i].d + "|" + changes[i].op;
+      key = entryKey(changes[i].op, changes[i].d);
       if (!Object.prototype.hasOwnProperty.call(byKey, key)) order.push(key);
       byKey[key] = changes[i];
     }
@@ -1525,6 +2145,10 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     }
     doc.entries = entries;
     return doc;
+  }
+
+  function applyChanges(doc, changes) {
+    return applyChangesLocal(doc, changes);
   }
 
   // ---------------------------------------------------------------------
@@ -2031,6 +2655,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   window.OpsMatrix.storage.KEYS = KEYS;
   window.OpsMatrix.storage.ERR = ERR;
   window.OpsMatrix.storage.create = create;
+  window.OpsMatrix.storage.applyChanges = applyChanges;
 })();
 </script>
 <script>
@@ -2055,140 +2680,211 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return node;
   }
 
-  function buildCatHeader(cat, derived) {
-    var header = el("div", { className: "omx-grid-cat-header" });
-
-    var titleRow = el("div", { className: "omx-grid-cat-title-row" });
-    var name = el("span", { className: "omx-grid-cat-name", text: cat.name });
-    titleRow.appendChild(name);
-
-    var today = el("span", {
-      className: "omx-grid-cat-today omx-tone-" + cat.today.tone,
-      text: "Today " + cat.today.display
-    });
-    titleRow.appendChild(today);
-    header.appendChild(titleRow);
-
-    var trailsRow = el("div", { className: "omx-grid-cat-trails" });
-    for (var i = 0; i < cat.trails.length; i++) {
-      var trail = cat.trails[i];
-      if (!trail.showOnDashboard) continue;
-      var chip = el("span", {
-        className: "omx-grid-trail-chip omx-tone-" + trail.tone,
-        text: trail.label + ": " + trail.display
-      });
-      trailsRow.appendChild(chip);
-    }
-    header.appendChild(trailsRow);
-
-    return header;
+  function entryKey(opId, dateIso) {
+    return opId + "|" + dateIso;
   }
 
-  function buildTable(cat, derived, handlers) {
-    var table = el("table", {
-      className: "omx-grid-table",
-      attrs: { "data-category-id": cat.id }
-    });
+  function buildCodeMap(derived) {
+    var map = {};
+    for (var i = 0; i < derived.codes.length; i++) {
+      map[derived.codes[i].key] = derived.codes[i];
+    }
+    return map;
+  }
 
-    var thead = el("thead");
-    var headRow = el("tr");
-    var corner = el("th", { className: "omx-grid-corner-cell" });
-    headRow.appendChild(corner);
+  function buildOpStatsMap(cat) {
+    var map = {};
+    for (var i = 0; i < cat.opStats.length; i++) {
+      map[cat.opStats[i].opId] = cat.opStats[i];
+    }
+    return map;
+  }
+
+  function buildHeadRow(derived) {
+    var tr = el("tr", { className: "omx-grid-head-row" });
+
+    tr.appendChild(el("th", {
+      className: "omx-grid-corner-cell",
+      text: "",
+      attrs: { scope: "col" }
+    }));
 
     for (var d = 0; d < derived.dateAxis.length; d++) {
       var day = derived.dateAxis[d];
-      var classes = "omx-grid-date-cell";
-      if (day.isToday) classes += " omx-grid-date-today";
-      if (day.isWeekend) classes += " omx-grid-date-weekend";
-      var th = el("th", { className: classes, attrs: { "data-date": day.d, scope: "col" } });
-      var dow = el("span", { className: "omx-grid-date-dow", text: day.dow });
-      var lbl = el("span", { className: "omx-grid-date-label", text: day.label });
-      th.appendChild(dow);
-      th.appendChild(lbl);
-      headRow.appendChild(th);
+      var attrs = { scope: "col", "data-date": day.d };
+      if (day.isToday) attrs["data-today"] = "true";
+      if (day.isWeekend) attrs["data-weekend"] = "true";
+
+      var th = el("th", { className: "omx-grid-date-cell", attrs: attrs });
+      th.appendChild(el("span", { className: "omx-grid-date-dow", text: day.dow }));
+      th.appendChild(el("span", { className: "omx-grid-date-label", text: day.label }));
+      tr.appendChild(th);
     }
-    thead.appendChild(headRow);
+
+    // The column shows no visible heading, so the meaning rides on the aria-label (section 7.2).
+    tr.appendChild(el("th", {
+      className: "omx-grid-stats-head-cell",
+      text: "",
+      attrs: { scope: "col", "aria-label": "Hit rate" }
+    }));
+
+    return tr;
+  }
+
+  function buildCategoryRow(cat, derived) {
+    var tr = el("tr", {
+      className: "omx-grid-category-row",
+      attrs: { "data-row": "category", "data-category-id": cat.id }
+    });
+
+    var th = el("th", {
+      className: "omx-grid-category-cell",
+      attrs: { scope: "colgroup", colspan: String(derived.dateAxis.length + 2) }
+    });
+
+    var inner = el("div", { className: "omx-grid-category-inner" });
+
+    // Name + today live in their OWN sticky-left box (INTERFACES.md 7.2): a sticky box is
+    // clamped to its containing block, so one wide enough to carry the chips too stops short
+    // of the left edge at full right scroll and clips its own first characters.
+    var label = el("span", { className: "omx-grid-category-label" });
+    label.appendChild(el("span", { className: "omx-grid-category-name", text: cat.name }));
+    label.appendChild(el("span", {
+      className: "omx-grid-category-today omx-tone-" + cat.today.tone,
+      text: cat.today.display
+    }));
+    inner.appendChild(label);
+
+    for (var i = 0; i < cat.trails.length; i++) {
+      var trail = cat.trails[i];
+      if (!trail.showOnDashboard) continue;
+      inner.appendChild(el("span", {
+        className: "omx-grid-trail-chip omx-tone-" + trail.tone,
+        text: trail.label + ", " + trail.display
+      }));
+    }
+
+    th.appendChild(inner);
+    tr.appendChild(th);
+    return tr;
+  }
+
+  function buildOpRow(cat, op, derived, codeMap, opStatsMap, handlers) {
+    var tr = el("tr", { className: "omx-grid-op-row", attrs: { "data-row": "op", "data-op-id": op.id } });
+
+    var opCellAttrs = { scope: "row" };
+    if (op.excluded) opCellAttrs["data-excluded"] = "true";
+    var opCell = el("th", { className: "omx-grid-op-cell", attrs: opCellAttrs });
+    opCell.appendChild(el("span", { className: "omx-grid-op-name", text: op.name }));
+    if (op.target) {
+      opCell.appendChild(el("span", { className: "omx-grid-op-target", text: op.target }));
+    }
+    tr.appendChild(opCell);
+
+    for (var d = 0; d < derived.dateAxis.length; d++) {
+      var day = derived.dateAxis[d];
+      var code = cat.cells[entryKey(op.id, day.d)];
+      var codeEntry = code ? codeMap[code] : null;
+
+      var wrapAttrs = { "data-date": day.d };
+      if (day.isToday) wrapAttrs["data-today"] = "true";
+      if (day.isWeekend) wrapAttrs["data-weekend"] = "true";
+      var td = el("td", { className: "omx-grid-cell-wrap", attrs: wrapAttrs });
+
+      var codeLabel = codeEntry ? codeEntry.label : "blank";
+      var btnAttrs = {
+        type: "button",
+        "data-code": code ? code : "",
+        "data-op-id": op.id,
+        "data-date": day.d,
+        "aria-label": op.name + ", " + day.label + ", " + codeLabel
+      };
+      var btn = el("button", { className: "omx-grid-cell", text: code ? code : "", attrs: btnAttrs });
+      if (codeEntry && codeEntry.slotIndex >= 0 && codeEntry.slotIndex <= 7) {
+        btn.classList.add("omx-code-" + codeEntry.slotIndex);
+      }
+
+      btn.addEventListener("click", (function (opId, dateIso) {
+        return function () {
+          handlers.onTick(opId, dateIso);
+        };
+      })(op.id, day.d));
+
+      td.appendChild(btn);
+      tr.appendChild(td);
+    }
+
+    var stat = opStatsMap[op.id];
+    var statsCell = el("td", { className: "omx-grid-stats-cell" });
+    statsCell.appendChild(el("span", { className: "omx-grid-stats-value", text: stat ? stat.display : "" }));
+    tr.appendChild(statsCell);
+
+    return tr;
+  }
+
+  function findAdjacentOpRow(tr, forward) {
+    var sibling = forward ? tr.nextElementSibling : tr.previousElementSibling;
+    while (sibling) {
+      if (sibling.getAttribute("data-row") === "op") return sibling;
+      sibling = forward ? sibling.nextElementSibling : sibling.previousElementSibling;
+    }
+    return null;
+  }
+
+  function handleGridKeydown(evt) {
+    var target = evt.target;
+    if (!target || !target.classList || !target.classList.contains("omx-grid-cell")) return;
+    var key = evt.key;
+    if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "ArrowUp" && key !== "ArrowDown") return;
+    evt.preventDefault();
+
+    var td = target.parentElement;
+    var tr = td.parentElement;
+    var cellIndex = Array.prototype.indexOf.call(tr.children, td);
+    var focusTarget = null;
+
+    if (key === "ArrowLeft") {
+      var prevTd = td.previousElementSibling;
+      if (prevTd) focusTarget = prevTd.querySelector(".omx-grid-cell");
+    } else if (key === "ArrowRight") {
+      var nextTd = td.nextElementSibling;
+      if (nextTd) focusTarget = nextTd.querySelector(".omx-grid-cell");
+    } else if (key === "ArrowUp") {
+      var prevTr = findAdjacentOpRow(tr, false);
+      if (prevTr && prevTr.children[cellIndex]) {
+        focusTarget = prevTr.children[cellIndex].querySelector(".omx-grid-cell");
+      }
+    } else if (key === "ArrowDown") {
+      var nextTr = findAdjacentOpRow(tr, true);
+      if (nextTr && nextTr.children[cellIndex]) {
+        focusTarget = nextTr.children[cellIndex].querySelector(".omx-grid-cell");
+      }
+    }
+
+    if (focusTarget) focusTarget.focus();
+  }
+
+  function buildTable(derived, handlers) {
+    var table = el("table", { className: "omx-grid-table" });
+    var codeMap = buildCodeMap(derived);
+
+    var thead = el("thead");
+    thead.appendChild(buildHeadRow(derived));
     table.appendChild(thead);
 
     var tbody = el("tbody");
-    for (var o = 0; o < cat.ops.length; o++) {
-      var op = cat.ops[o];
-      var tr = el("tr", { attrs: { "data-op-id": op.id } });
+    for (var c = 0; c < derived.categories.length; c++) {
+      var cat = derived.categories[c];
+      tbody.appendChild(buildCategoryRow(cat, derived));
 
-      var opCell = el("th", {
-        className: "omx-grid-op-cell",
-        attrs: { scope: "row" }
-      });
-      var opName = el("span", { className: "omx-grid-op-name", text: op.name });
-      opCell.appendChild(opName);
-      if (op.target) {
-        var target = el("span", { className: "omx-grid-op-target", text: op.target });
-        opCell.appendChild(target);
+      var opStatsMap = buildOpStatsMap(cat);
+      for (var o = 0; o < cat.ops.length; o++) {
+        tbody.appendChild(buildOpRow(cat, cat.ops[o], derived, codeMap, opStatsMap, handlers));
       }
-      tr.appendChild(opCell);
-
-      for (var dd = 0; dd < derived.dateAxis.length; dd++) {
-        var dayCol = derived.dateAxis[dd];
-        var key = op.id + "|" + dayCol.d;
-        var code = cat.cells[key];
-        var td = el("td", { className: "omx-grid-cell-wrap" });
-        var cellClasses = "omx-grid-cell";
-        if (dayCol.isToday) cellClasses += " omx-grid-cell-today";
-        var btn = el("button", {
-          className: cellClasses,
-          text: code ? code : "",
-          attrs: {
-            type: "button",
-            "data-code": code ? code : "",
-            "data-op-id": op.id,
-            "data-date": dayCol.d,
-            "aria-label": op.name + " " + dayCol.label + (code ? " " + code : " blank")
-          }
-        });
-        btn.addEventListener("click", (function (opId, dateIso) {
-          return function () {
-            handlers.onTick(opId, dateIso);
-          };
-        })(op.id, dayCol.d));
-        td.appendChild(btn);
-        tr.appendChild(td);
-      }
-
-      tbody.appendChild(tr);
     }
     table.appendChild(tbody);
 
-    table.addEventListener("keydown", function (evt) {
-      var target = evt.target;
-      if (!target || !target.classList || !target.classList.contains("omx-grid-cell")) return;
-      var key = evt.key;
-      if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "ArrowUp" && key !== "ArrowDown") return;
-      evt.preventDefault();
-      var td = target.parentElement;
-      var tr = td.parentElement;
-      var cellIndex = Array.prototype.indexOf.call(tr.children, td);
-      var focusTarget = null;
-
-      if (key === "ArrowLeft") {
-        var prevTd = td.previousElementSibling;
-        if (prevTd) focusTarget = prevTd.querySelector(".omx-grid-cell");
-      } else if (key === "ArrowRight") {
-        var nextTd = td.nextElementSibling;
-        if (nextTd) focusTarget = nextTd.querySelector(".omx-grid-cell");
-      } else if (key === "ArrowUp") {
-        var prevTr = tr.previousElementSibling;
-        if (prevTr && prevTr.children[cellIndex]) {
-          focusTarget = prevTr.children[cellIndex].querySelector(".omx-grid-cell");
-        }
-      } else if (key === "ArrowDown") {
-        var nextTr = tr.nextElementSibling;
-        if (nextTr && nextTr.children[cellIndex]) {
-          focusTarget = nextTr.children[cellIndex].querySelector(".omx-grid-cell");
-        }
-      }
-
-      if (focusTarget) focusTarget.focus();
-    });
+    table.addEventListener("keydown", handleGridKeydown);
 
     return table;
   }
@@ -2197,22 +2893,9 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     container.textContent = "";
 
     var root = el("div", { className: "omx-grid-root" });
-
-    for (var c = 0; c < derived.categories.length; c++) {
-      var cat = derived.categories[c];
-      var section = el("div", {
-        className: "omx-grid-section",
-        attrs: { "data-category-id": cat.id }
-      });
-
-      section.appendChild(buildCatHeader(cat, derived));
-
-      var scroll = el("div", { className: "omx-grid-scroll" });
-      scroll.appendChild(buildTable(cat, derived, handlers));
-      section.appendChild(scroll);
-
-      root.appendChild(section);
-    }
+    var scroll = el("div", { className: "omx-grid-scroll" });
+    scroll.appendChild(buildTable(derived, handlers));
+    root.appendChild(scroll);
 
     container.appendChild(root);
   }
@@ -2226,12 +2909,30 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
 (function () {
   "use strict";
 
-  function findCurrentDate(model, derived) {
-    var d = null;
-    if (model) {
-      d = model.mobileDate || model.selectedDate || model.focusedDate || null;
+  function el(tag, opts) {
+    var node = document.createElement(tag);
+    if (opts) {
+      if (opts.className) node.className = opts.className;
+      if (opts.text !== undefined) node.textContent = opts.text;
+      if (opts.attrs) {
+        for (var k in opts.attrs) {
+          if (Object.prototype.hasOwnProperty.call(opts.attrs, k)) {
+            node.setAttribute(k, opts.attrs[k]);
+          }
+        }
+      }
     }
-    return d || derived.todayIso;
+    return node;
+  }
+
+  function entryKey(opId, dateIso) {
+    return opId + "|" + dateIso;
+  }
+
+  function emptyContainer(container) {
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
   }
 
   function findAxisIndex(dateAxis, dateIso) {
@@ -2241,140 +2942,176 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return -1;
   }
 
-  function findCode(codes, key) {
-    if (!key) return null;
+  // The one local code map per render (INTERFACES.md 5.1, code fill law): key -> code row,
+  // which carries both the chip label and the slotIndex the fill class is built from.
+  function buildCodeMap(codes) {
+    var map = {};
     for (var i = 0; i < codes.length; i++) {
-      if (codes[i].key === key) return codes[i];
+      map[codes[i].key] = codes[i];
     }
-    return null;
+    return map;
   }
 
-  function render(container, model, derived, handlers) {
-    container.textContent = "";
+  function buildStepper(derived, handlers, currentDate, currentEntry, prevEntry, nextEntry) {
+    var stepper = el("div", { className: "omx-mob-stepper" });
 
-    var currentDate = findCurrentDate(model, derived);
-    var dateAxis = derived.dateAxis || [];
-    var idx = findAxisIndex(dateAxis, currentDate);
-    var currentEntry = idx >= 0 ? dateAxis[idx] : null;
-    var prevEntry = idx > 0 ? dateAxis[idx - 1] : null;
-    var nextEntry = idx >= 0 && idx < dateAxis.length - 1 ? dateAxis[idx + 1] : null;
-
-    var stepper = document.createElement("div");
-    stepper.className = "omx-mob-stepper";
-
-    var prevBtn = document.createElement("button");
-    prevBtn.type = "button";
-    prevBtn.className = "omx-mob-step-btn omx-mob-step-prev";
-    prevBtn.textContent = "‹ Prev";
+    var prevBtn = el("button", {
+      className: "omx-mob-step-btn",
+      text: "‹ Prev",
+      attrs: { type: "button", "data-step": "prev" }
+    });
     if (!prevEntry) prevBtn.disabled = true;
     prevBtn.addEventListener("click", function () {
       if (prevEntry) handlers.onDateChange(prevEntry.d);
     });
     stepper.appendChild(prevBtn);
 
-    var dateLabel = document.createElement("div");
-    dateLabel.className = "omx-mob-step-date";
-    dateLabel.textContent = currentEntry
-      ? currentEntry.dow + " " + currentEntry.label
-      : currentDate;
-    stepper.appendChild(dateLabel);
+    var dateBlock = el("div", { className: "omx-mob-step-date" });
+    dateBlock.appendChild(el("span", {
+      className: "omx-mob-step-dow",
+      text: currentEntry ? currentEntry.dow : ""
+    }));
+    dateBlock.appendChild(el("span", {
+      className: "omx-mob-step-label",
+      text: currentEntry ? currentEntry.label : ""
+    }));
+    stepper.appendChild(dateBlock);
 
-    var todayBtn = document.createElement("button");
-    todayBtn.type = "button";
-    todayBtn.className = "omx-mob-step-today";
-    todayBtn.textContent = "Today";
+    var todayBtn = el("button", {
+      className: "omx-mob-step-today",
+      text: "Today",
+      attrs: { type: "button" }
+    });
     if (currentDate === derived.todayIso) todayBtn.disabled = true;
     todayBtn.addEventListener("click", function () {
       handlers.onDateChange(derived.todayIso);
     });
     stepper.appendChild(todayBtn);
 
-    var nextBtn = document.createElement("button");
-    nextBtn.type = "button";
-    nextBtn.className = "omx-mob-step-btn omx-mob-step-next";
-    nextBtn.textContent = "Next ›";
+    var nextBtn = el("button", {
+      className: "omx-mob-step-btn",
+      text: "Next ›",
+      attrs: { type: "button", "data-step": "next" }
+    });
     if (!nextEntry) nextBtn.disabled = true;
     nextBtn.addEventListener("click", function () {
       if (nextEntry) handlers.onDateChange(nextEntry.d);
     });
     stepper.appendChild(nextBtn);
 
-    container.appendChild(stepper);
+    return stepper;
+  }
+
+  function buildProgress(doneOps, totalOps) {
+    var progress = el("div", { className: "omx-mob-progress" });
+
+    var bar = el("div", { className: "omx-mob-progress-bar" });
+    var fill = el("div", { className: "omx-mob-progress-fill" });
+    var pct = totalOps > 0 ? Math.round((doneOps / totalOps) * 100) : 0;
+    fill.style.width = pct + "%";
+    bar.appendChild(fill);
+    progress.appendChild(bar);
+
+    var text = el("span", { className: "omx-mob-progress-text" });
+    text.textContent = doneOps + " of " + totalOps + " done";
+    progress.appendChild(text);
+
+    return progress;
+  }
+
+  function buildOpRow(op, cat, currentDate, codeMap, handlers) {
+    var key = entryKey(op.id, currentDate);
+    var code = cat.cells ? cat.cells[key] : undefined;
+    var codeEntry = code ? codeMap[code] : null;
+
+    var row = el("button", {
+      className: "omx-mob-op-row",
+      attrs: { type: "button", "data-op-id": op.id, "data-code": code || "" }
+    });
+    // Fills stop at eight slots (--omx-code-0 … --omx-code-7); a later code renders unfilled.
+    if (codeEntry && codeEntry.slotIndex >= 0 && codeEntry.slotIndex <= 7) {
+      row.classList.add("omx-code-" + codeEntry.slotIndex);
+    }
+
+    row.appendChild(el("span", { className: "omx-mob-op-name", text: op.name }));
+
+    var codeSpan = codeEntry
+      ? el("span", { className: "omx-mob-op-code", text: codeEntry.label })
+      : el("span", { className: "omx-mob-op-code" });
+    row.appendChild(codeSpan);
+
+    row.addEventListener("click", function () {
+      handlers.onTick(op.id, currentDate);
+    });
+
+    return row;
+  }
+
+  function buildCategory(cat, currentDate, codeMap, handlers) {
+    var section = el("section", {
+      className: "omx-mob-category",
+      attrs: { "data-category-id": cat.id }
+    });
+
+    var head = el("div", { className: "omx-mob-category-head" });
+    head.appendChild(el("span", { className: "omx-mob-category-name", text: cat.name }));
+
+    var scoreTone = cat.today ? cat.today.tone : "none";
+    head.appendChild(el("span", {
+      className: "omx-mob-category-score omx-tone-" + scoreTone,
+      text: cat.today ? cat.today.display : "--"
+    }));
+    section.appendChild(head);
+
+    var ops = cat.ops || [];
+    for (var i = 0; i < ops.length; i++) {
+      section.appendChild(buildOpRow(ops[i], cat, currentDate, codeMap, handlers));
+    }
+
+    return section;
+  }
+
+  function render(container, model, derived, handlers) {
+    emptyContainer(container);
+
+    var root = el("div", { className: "omx-mob-root" });
+    var column = el("div", { className: "omx-mob-column" });
+
+    var dateAxis = derived.dateAxis || [];
+    var currentDate = derived.focusDate;
+    var idx = findAxisIndex(dateAxis, currentDate);
+    var currentEntry = idx >= 0 ? dateAxis[idx] : null;
+    var prevEntry = idx > 0 ? dateAxis[idx - 1] : null;
+    var nextEntry = idx >= 0 && idx < dateAxis.length - 1 ? dateAxis[idx + 1] : null;
+
+    column.appendChild(buildStepper(derived, handlers, currentDate, currentEntry, prevEntry, nextEntry));
 
     var categories = derived.categories || [];
     var totalOps = 0;
     var doneOps = 0;
-    categories.forEach(function (cat) {
-      (cat.ops || []).forEach(function (op) {
+    for (var c = 0; c < categories.length; c++) {
+      var cat = categories[c];
+      var ops = cat.ops || [];
+      for (var o = 0; o < ops.length; o++) {
         totalOps += 1;
-        var key = op.id + "|" + currentDate;
+        var key = entryKey(ops[o].id, currentDate);
         var code = cat.cells ? cat.cells[key] : undefined;
         if (code) doneOps += 1;
-      });
-    });
+      }
+    }
 
-    var counter = document.createElement("div");
-    counter.className = "omx-mob-counter";
-    counter.textContent = doneOps + " of " + totalOps + " done";
-    container.appendChild(counter);
+    column.appendChild(buildProgress(doneOps, totalOps));
 
-    var list = document.createElement("div");
-    list.className = "omx-mob-list";
+    var codeMap = buildCodeMap(derived.codes || []);
 
-    categories.forEach(function (cat) {
-      var section = document.createElement("section");
-      section.className = "omx-mob-cat";
+    var list = el("div", { className: "omx-mob-list" });
+    for (var ci = 0; ci < categories.length; ci++) {
+      list.appendChild(buildCategory(categories[ci], currentDate, codeMap, handlers));
+    }
+    column.appendChild(list);
 
-      var header = document.createElement("div");
-      header.className = "omx-mob-cat-header";
-
-      var nameEl = document.createElement("span");
-      nameEl.className = "omx-mob-cat-name";
-      nameEl.textContent = cat.name;
-      header.appendChild(nameEl);
-
-      var scoreTone = cat.today ? cat.today.tone : "none";
-      var scoreEl = document.createElement("span");
-      scoreEl.className = "omx-mob-cat-score omx-tone-" + scoreTone;
-      scoreEl.textContent = cat.today ? cat.today.display : "--";
-      header.appendChild(scoreEl);
-
-      section.appendChild(header);
-
-      var ops = cat.ops || [];
-      ops.forEach(function (op) {
-        var key = op.id + "|" + currentDate;
-        var code = cat.cells ? cat.cells[key] : undefined;
-        var codeInfo = findCode(derived.codes, code);
-
-        var row = document.createElement("button");
-        row.type = "button";
-        row.className = "omx-mob-op-row";
-        if (code) {
-          row.classList.add("omx-mob-op-row-ticked");
-        }
-
-        var nameSpan = document.createElement("span");
-        nameSpan.className = "omx-mob-op-name";
-        nameSpan.textContent = op.name;
-        row.appendChild(nameSpan);
-
-        var codeSpan = document.createElement("span");
-        codeSpan.className = "omx-mob-op-code";
-        codeSpan.textContent = codeInfo ? codeInfo.label : "Tap to tick";
-        row.appendChild(codeSpan);
-
-        row.addEventListener("click", function () {
-          handlers.onTick(op.id, currentDate);
-        });
-
-        section.appendChild(row);
-      });
-
-      list.appendChild(section);
-    });
-
-    container.appendChild(list);
+    root.appendChild(column);
+    container.appendChild(root);
   }
 
   window.OpsMatrix.views.mobile = { render: render };
@@ -2386,114 +3123,147 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
 (function () {
   "use strict";
 
-  function el(tag, className, text) {
+  function el(tag, opts) {
     var node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined && text !== null) node.textContent = text;
+    if (opts) {
+      if (opts.className) node.className = opts.className;
+      if (opts.text !== undefined) node.textContent = opts.text;
+      if (opts.attrs) {
+        for (var k in opts.attrs) {
+          if (Object.prototype.hasOwnProperty.call(opts.attrs, k)) {
+            node.setAttribute(k, opts.attrs[k]);
+          }
+        }
+      }
+    }
     return node;
   }
 
-  function toneClass(prefix, tone) {
-    return prefix + " omx-tone-" + (tone || "none");
+  function renderStatTile(valueNode, label) {
+    var tile = el("div", { className: "omx-dash-stat-tile" });
+    tile.appendChild(valueNode);
+    tile.appendChild(el("span", { className: "omx-dash-stat-label", text: label }));
+    return tile;
   }
 
-  function renderTrailRow(trail) {
-    var row = el("div", "omx-dash-trail-row");
-    row.appendChild(el("span", "omx-dash-trail-label", trail.label));
-    row.appendChild(el("span", toneClass("omx-dash-trail-value", trail.tone), trail.display));
-    return row;
+  function renderHeader(derived) {
+    var header = el("header", { className: "omx-dash-header" });
+    header.appendChild(el("div", { className: "omx-dash-date", text: derived.todayLabel }));
+
+    var stats = el("div", { className: "omx-dash-stats" });
+    var overall = derived.overall;
+    stats.appendChild(renderStatTile(
+      el("span", { className: "omx-dash-stat-value omx-tone-" + overall.tone, text: overall.display }),
+      "Today"
+    ));
+    stats.appendChild(renderStatTile(
+      el("span", { className: "omx-dash-stat-value", text: overall.categoriesOnTarget + " / " + overall.categoriesTotal }),
+      "On target"
+    ));
+    stats.appendChild(renderStatTile(
+      el("span", { className: "omx-dash-stat-value", text: overall.untickedCount }),
+      "Unticked"
+    ));
+    stats.appendChild(renderStatTile(
+      el("span", { className: "omx-dash-stat-value", text: derived.targetLabel }),
+      "Target "
+    ));
+    header.appendChild(stats);
+
+    return header;
+  }
+
+  function renderCardHeader(category) {
+    var header = el("div", { className: "omx-dash-card-header" });
+    header.appendChild(el("h3", { className: "omx-dash-card-title", text: category.name }));
+    header.appendChild(el("span", { className: "omx-dash-card-count", text: category.opCount + " items" }));
+    return header;
   }
 
   function renderTrails(category) {
-    var wrap = el("div", "omx-dash-trails");
+    var wrap = el("div", { className: "omx-dash-trails" });
     var trails = category.trails || [];
     for (var i = 0; i < trails.length; i++) {
-      if (!trails[i].showOnDashboard) continue;
-      wrap.appendChild(renderTrailRow(trails[i]));
+      var trail = trails[i];
+      if (!trail.showOnDashboard) continue;
+      var row = el("div", { className: "omx-dash-trail-row" });
+      row.appendChild(el("span", { className: "omx-dash-trail-label", text: trail.label }));
+      row.appendChild(el("span", {
+        className: "omx-dash-trail-value omx-tone-" + trail.tone,
+        text: trail.display
+      }));
+      wrap.appendChild(row);
     }
     return wrap;
   }
 
-  function renderToday(category) {
-    var wrap = el("div", "omx-dash-today");
-    wrap.appendChild(el("span", "omx-dash-today-label", "Today"));
-    wrap.appendChild(el("span", toneClass("omx-dash-today-value", category.today.tone), category.today.display));
-    return wrap;
-  }
-
-  function renderLadder(category) {
-    var wrap = el("div", "omx-dash-ladder");
-    var ladder = category.ladder || [];
-    for (var i = 0; i < ladder.length; i++) {
-      var d = ladder[i];
-      var item = el("div", toneClass("omx-dash-ladder-day", d.tone));
-      item.appendChild(el("span", "omx-dash-ladder-date", d.label));
-      item.appendChild(el("span", "omx-dash-ladder-score", d.display));
-      wrap.appendChild(item);
-    }
+  function renderToday(category, derived) {
+    var wrap = el("div", { className: "omx-dash-today" });
+    wrap.appendChild(el("span", { className: "omx-dash-today-label", text: "Today" }));
+    wrap.appendChild(el("span", {
+      className: "omx-dash-today-value omx-tone-" + category.today.tone,
+      text: category.today.display
+    }));
+    wrap.appendChild(el("span", { className: "omx-dash-today-target", text: "Target " + derived.targetLabel }));
     return wrap;
   }
 
   function renderUnticked(category) {
-    var wrap = el("div", "omx-dash-unticked");
+    var wrap = el("div", { className: "omx-dash-unticked" });
     var unticked = category.unticked || [];
-    wrap.appendChild(el("div", "omx-dash-unticked-title", "Unticked today (" + unticked.length + ")"));
+    wrap.appendChild(el("div", { className: "omx-dash-unticked-title", text: "Unticked today" }));
     if (unticked.length === 0) {
-      wrap.appendChild(el("div", "omx-dash-unticked-empty", "All done"));
+      wrap.appendChild(el("div", { className: "omx-dash-unticked-empty", text: "All done" }));
       return wrap;
     }
-    var list = el("ul", "omx-dash-unticked-list");
+    var list = el("ul", { className: "omx-dash-unticked-list" });
     for (var i = 0; i < unticked.length; i++) {
-      var li = el("li", "omx-dash-unticked-item", unticked[i].name);
-      list.appendChild(li);
+      list.appendChild(el("li", { className: "omx-dash-unticked-item", text: unticked[i].name }));
     }
     wrap.appendChild(list);
     return wrap;
   }
 
-  function renderCard(category) {
-    var card = el("section", "omx-dash-card");
-    var header = el("div", "omx-dash-card-header");
-    header.appendChild(el("h3", "omx-dash-card-name", category.name));
-    header.appendChild(el("span", "omx-dash-card-count", category.opCount + " ops"));
-    card.appendChild(header);
+  function renderLadder(category) {
+    var wrap = el("div", { className: "omx-dash-ladder" });
+    var strip = el("div", { className: "omx-dash-ladder-strip" });
+    var ladder = category.ladder || [];
+    for (var i = 0; i < ladder.length; i++) {
+      var d = ladder[i];
+      var day = el("div", { className: "omx-dash-ladder-day omx-tone-" + d.tone });
+      day.appendChild(el("span", { className: "omx-dash-ladder-dow", text: (d.dow || "").charAt(0) }));
+      day.appendChild(el("span", { className: "omx-dash-ladder-value", text: d.display }));
+      strip.appendChild(day);
+    }
+    wrap.appendChild(strip);
+    return wrap;
+  }
 
-    // Row order contract: trail averages, then today, then the ladder.
+  function renderCard(category, derived) {
+    var card = el("section", { className: "omx-dash-card", attrs: { "data-category-id": category.id } });
+    card.appendChild(renderCardHeader(category));
+
+    // Row order contract: trails, then today, then unticked, then the ladder (pinned to the bottom).
     card.appendChild(renderTrails(category));
-    card.appendChild(renderToday(category));
-    card.appendChild(renderLadder(category));
+    card.appendChild(renderToday(category, derived));
     card.appendChild(renderUnticked(category));
+    card.appendChild(renderLadder(category));
 
     return card;
   }
 
-  function renderOverall(derived) {
-    var overall = derived.overall;
-    var wrap = el("div", "omx-dash-overall");
-    wrap.appendChild(el("span", toneClass("omx-dash-overall-score", overall.tone), overall.display));
-    wrap.appendChild(el("span", "omx-dash-overall-target", "Target " + derived.targetLabel));
-    wrap.appendChild(el(
-      "span",
-      "omx-dash-overall-categories",
-      overall.categoriesOnTarget + " / " + overall.categoriesTotal + " categories on target"
-    ));
-    if (overall.untickedCount > 0) {
-      wrap.appendChild(el("span", "omx-dash-overall-unticked", overall.untickedCount + " unticked"));
-    }
-    return wrap;
-  }
-
   function render(container, model, derived, handlers) {
-    container.textContent = "";
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
 
-    var root = el("div", "omx-dash-root");
-    root.appendChild(el("div", "omx-dash-today-label-top", derived.todayLabel));
-    root.appendChild(renderOverall(derived));
+    var root = el("div", { className: "omx-dash-root" });
+    root.appendChild(renderHeader(derived));
 
-    var grid = el("div", "omx-dash-grid");
+    var grid = el("div", { className: "omx-dash-grid" });
     var categories = derived.categories || [];
     for (var i = 0; i < categories.length; i++) {
-      grid.appendChild(renderCard(categories[i]));
+      grid.appendChild(renderCard(categories[i], derived));
     }
     root.appendChild(grid);
 
@@ -2509,10 +3279,10 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
 /*
  * Ops Matrix - application shell.
  *
- * Owns: boot, storage selection, the pull/flush cycle, the debounce, the sync banner,
- * the Settings panel, the derived model, and every number-to-string conversion.
- * Views read `derived` and call handlers; they never touch storage, the engine or the DOM
- * outside their own container. The engine is reached only from here.
+ * Owns: boot, storage selection, the pull/flush cycle, the debounce, the sync pill,
+ * the whole Settings panel DOM, the derived model, and every number-to-string conversion.
+ * Views read the derived model and call handlers; they never touch storage, the engine or
+ * the DOM outside their own container. The engine is reached only from here.
  */
 
 (function () {
@@ -2552,10 +3322,10 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     mobileQuery: "(max-width: 720px)"
   };
 
-  // First-run document. Mirrors scripts/ops-matrix/seed/config.json (categories, ops and
+  // First-run document. Mirrors scripts/ops-matrix/seed/config.json (categories, items and
   // settings only - no entries). A device that has never synced starts here; the first
   // flush commits it to the data repo.
-  var SEED_DOC = {"schemaVersion":1,"owner":{"userKey":"john"},"settings":{"timezone":"Australia/Brisbane","dateFormat":"dd/MM/yyyy","codes":{"T":{"label":"Tick","num":1,"den":1,"counterLabel":"Tick/Track Count","satisfiesEngagement":true},"W":{"label":"Winning","num":1,"den":1,"counterLabel":"Winning Count","satisfiesEngagement":true},"C":{"label":"Adjust","num":0,"den":1,"counterLabel":"Adjust Count","satisfiesEngagement":true},"M":{"label":"Adjust (legacy)","num":0,"den":1,"aliasOf":"C","counterLabel":"Adjust Count","satisfiesEngagement":true},"B":{"label":"Bye","num":0,"den":0,"counterLabel":"NA Count","satisfiesEngagement":true},"":{"label":"Miss (no entry)","num":0,"den":1,"implicit":true,"satisfiesEngagement":false}},"trails":[{"id":"trail1","label":"Trail1 28 day average","days":28,"showOnDashboard":false},{"id":"trail2","label":"Trail2 28 day average","days":28,"showOnDashboard":false},{"id":"trail3","label":"Trail3 28 day average","days":28,"showOnDashboard":true},{"id":"trail4","label":"Trail4 7 day average","days":7,"showOnDashboard":true}],"scoring":{"target":85,"bands":[{"id":"off","label":"Off track","min":0},{"id":"building","label":"Building","min":50},{"id":"close","label":"Close","min":70},{"id":"ontarget","label":"On target","min":85}]},"dashboard":{"lastNDays":7}},"categories":[{"id":"3dvrs","name":"3DVRS","startedOn":"2025-06-19","slots":["3dvrs:0","3dvrs:1","3dvrs:2","3dvrs:3","3dvrs:4","3dvrs:5","3dvrs:6"],"order":1},{"id":"clarity-balance-mlw","name":"Clarity, Balance and Mind Like Water","startedOn":"2025-06-19","slots":["clarity-balance-mlw:0","clarity-balance-mlw:1","clarity-balance-mlw:2","clarity-balance-mlw:3","clarity-balance-mlw:4","clarity-balance-mlw:5","clarity-balance-mlw:6","clarity-balance-mlw:7","clarity-balance-mlw:8","clarity-balance-mlw:9"],"order":2},{"id":"connection-privilege-gratitude","name":"Connection, Privilege and Gratitude","startedOn":"2025-06-19","slots":["connection-privilege-gratitude:0","connection-privilege-gratitude:1"],"order":3},{"id":"fuel","name":"Fuel","startedOn":"2025-06-19","slots":["fuel:0","fuel:1","fuel:2","fuel:3","fuel:4","fuel:5","fuel:6","fuel:7"],"order":4},{"id":"home-refuge-sanctuary","name":"Home Refuge & Sanctuary","startedOn":"2025-09-05","slots":["home-refuge-sanctuary:0","home-refuge-sanctuary:1","home-refuge-sanctuary:2","home-refuge-sanctuary:3","home-refuge-sanctuary:4","home-refuge-sanctuary:5","home-refuge-sanctuary:6","home-refuge-sanctuary:7","home-refuge-sanctuary:8","home-refuge-sanctuary:9","home-refuge-sanctuary:10","home-refuge-sanctuary:11","home-refuge-sanctuary:12"],"order":5},{"id":"personal-hygiene","name":"Personal Hygiene","startedOn":"2025-06-26","slots":["personal-hygiene:0","personal-hygiene:1","personal-hygiene:2","personal-hygiene:3","personal-hygiene:4","personal-hygiene:5"],"order":6}],"ops":[{"id":"3dvrs:0","name":"Clear outlook","excluded":false},{"id":"3dvrs:1","name":"Clear notebooks","excluded":false},{"id":"3dvrs:2","name":"Clear Notepad++","excluded":false},{"id":"3dvrs:3","name":"Clear windows desktop","excluded":false},{"id":"3dvrs:4","name":"Clear system folders","excluded":false},{"id":"3dvrs:5","name":"Sync unfinished tasks","excluded":false},{"id":"3dvrs:6","name":"Migrate Bullet Journal tasks","excluded":false},{"id":"clarity-balance-mlw:0","name":"Meditation","excluded":false},{"id":"clarity-balance-mlw:1","name":"Clear Gmail","excluded":false},{"id":"clarity-balance-mlw:2","name":"Wim Hof / long breaths","excluded":false},{"id":"clarity-balance-mlw:3","name":"Breaths with timer","excluded":false},{"id":"clarity-balance-mlw:4","name":"Meditation Stillness","excluded":false},{"id":"clarity-balance-mlw:5","name":"NSDR","excluded":false},{"id":"clarity-balance-mlw:6","name":"Body Scan","excluded":false},{"id":"clarity-balance-mlw:7","name":"Transcendental Raf","excluded":false},{"id":"clarity-balance-mlw:8","name":"The Way","excluded":false},{"id":"clarity-balance-mlw:9","name":"Breath and Mobility","excluded":false},{"id":"connection-privilege-gratitude:0","name":"Molly Journal","excluded":false},{"id":"connection-privilege-gratitude:1","name":"Gap vs Gain","excluded":false},{"id":"fuel:0","name":"Green drink","excluded":false},{"id":"fuel:1","name":"Yakult","excluded":false},{"id":"fuel:2","name":"30g Protein","excluded":false},{"id":"fuel:3","name":"Creatine","excluded":false},{"id":"fuel:4","name":"Vitamins","excluded":false},{"id":"fuel:5","name":"Fish Oil","excluded":false},{"id":"fuel:6","name":"10g Fibre","excluded":false},{"id":"fuel:7","name":"500mL+ of Water finished","excluded":false},{"id":"home-refuge-sanctuary:0","name":"Washing on","excluded":false},{"id":"home-refuge-sanctuary:1","name":"Beds made","excluded":false},{"id":"home-refuge-sanctuary:2","name":"Vacuum","excluded":false},{"id":"home-refuge-sanctuary:3","name":"Dishes","excluded":false},{"id":"home-refuge-sanctuary:4","name":"Dry Dishes","excluded":false},{"id":"home-refuge-sanctuary:5","name":"Dry dishes away","excluded":false},{"id":"home-refuge-sanctuary:6","name":"Washing away","excluded":false},{"id":"home-refuge-sanctuary:7","name":"Tidy Tables","excluded":false},{"id":"home-refuge-sanctuary:8","name":"Washing hung","excluded":false},{"id":"home-refuge-sanctuary:9","name":"Inbox table and Calendar","excluded":false},{"id":"home-refuge-sanctuary:10","name":"Wipe down Kitchen benches","excluded":false},{"id":"home-refuge-sanctuary:11","name":"Bring in washing if required","excluded":false},{"id":"home-refuge-sanctuary:12","name":"Bins","excluded":false},{"id":"personal-hygiene:0","name":"Teeth","excluded":false},{"id":"personal-hygiene:1","name":"Floss","excluded":false},{"id":"personal-hygiene:2","name":"Cut nails","excluded":false},{"id":"personal-hygiene:3","name":"Trim beard","excluded":false},{"id":"personal-hygiene:4","name":"Shave","excluded":false},{"id":"personal-hygiene:5","name":"Tongue Scraping","excluded":false}],"entries":[]};
+  var SEED_DOC = {"schemaVersion":1,"owner":{"userKey":"john"},"settings":{"timezone":"Australia/Brisbane","dateFormat":"dd/MM/yyyy","codes":{"T":{"label":"Tick","num":1,"den":1,"counterLabel":"Tick/Track Count","satisfiesEngagement":true},"W":{"label":"Winning","num":1,"den":1,"counterLabel":"Winning Count","satisfiesEngagement":true},"C":{"label":"Adjust","num":0,"den":1,"counterLabel":"Adjust Count","satisfiesEngagement":true},"M":{"label":"Adjust (legacy)","num":0,"den":1,"aliasOf":"C","counterLabel":"Adjust Count","satisfiesEngagement":true},"B":{"label":"Bye","num":0,"den":0,"counterLabel":"NA Count","satisfiesEngagement":true},"":{"label":"Miss (no entry)","num":0,"den":1,"implicit":true,"satisfiesEngagement":false}},"trails":[{"id":"trail1","label":"28-day average","days":28,"showOnDashboard":false},{"id":"trail2","label":"28-day average","days":28,"showOnDashboard":false},{"id":"trail3","label":"28-day average","days":28,"showOnDashboard":true},{"id":"trail4","label":"7-day average","days":7,"showOnDashboard":true}],"scoring":{"target":85,"bands":[{"id":"off","label":"Off track","min":0},{"id":"building","label":"Building","min":50},{"id":"close","label":"Close","min":70},{"id":"ontarget","label":"On target","min":85}]},"dashboard":{"lastNDays":7}},"categories":[{"id":"3dvrs","name":"3DVRS","startedOn":"2025-06-19","slots":["3dvrs:0","3dvrs:1","3dvrs:2","3dvrs:3","3dvrs:4","3dvrs:5","3dvrs:6"],"order":1},{"id":"clarity-balance-mlw","name":"Clarity, Balance and Mind Like Water","startedOn":"2025-06-19","slots":["clarity-balance-mlw:0","clarity-balance-mlw:1","clarity-balance-mlw:2","clarity-balance-mlw:3","clarity-balance-mlw:4","clarity-balance-mlw:5","clarity-balance-mlw:6","clarity-balance-mlw:7","clarity-balance-mlw:8","clarity-balance-mlw:9"],"order":2},{"id":"connection-privilege-gratitude","name":"Connection, Privilege and Gratitude","startedOn":"2025-06-19","slots":["connection-privilege-gratitude:0","connection-privilege-gratitude:1"],"order":3},{"id":"fuel","name":"Fuel","startedOn":"2025-06-19","slots":["fuel:0","fuel:1","fuel:2","fuel:3","fuel:4","fuel:5","fuel:6","fuel:7"],"order":4},{"id":"home-refuge-sanctuary","name":"Home Refuge & Sanctuary","startedOn":"2025-09-05","slots":["home-refuge-sanctuary:0","home-refuge-sanctuary:1","home-refuge-sanctuary:2","home-refuge-sanctuary:3","home-refuge-sanctuary:4","home-refuge-sanctuary:5","home-refuge-sanctuary:6","home-refuge-sanctuary:7","home-refuge-sanctuary:8","home-refuge-sanctuary:9","home-refuge-sanctuary:10","home-refuge-sanctuary:11","home-refuge-sanctuary:12"],"order":5},{"id":"personal-hygiene","name":"Personal Hygiene","startedOn":"2025-06-26","slots":["personal-hygiene:0","personal-hygiene:1","personal-hygiene:2","personal-hygiene:3","personal-hygiene:4","personal-hygiene:5"],"order":6}],"ops":[{"id":"3dvrs:0","name":"Clear outlook","excluded":false},{"id":"3dvrs:1","name":"Clear notebooks","excluded":false},{"id":"3dvrs:2","name":"Clear Notepad++","excluded":false},{"id":"3dvrs:3","name":"Clear windows desktop","excluded":false},{"id":"3dvrs:4","name":"Clear system folders","excluded":false},{"id":"3dvrs:5","name":"Sync unfinished tasks","excluded":false},{"id":"3dvrs:6","name":"Migrate Bullet Journal tasks","excluded":false},{"id":"clarity-balance-mlw:0","name":"Meditation","excluded":false},{"id":"clarity-balance-mlw:1","name":"Clear Gmail","excluded":false},{"id":"clarity-balance-mlw:2","name":"Wim Hof / long breaths","excluded":false},{"id":"clarity-balance-mlw:3","name":"Breaths with timer","excluded":false},{"id":"clarity-balance-mlw:4","name":"Meditation Stillness","excluded":false},{"id":"clarity-balance-mlw:5","name":"NSDR","excluded":false},{"id":"clarity-balance-mlw:6","name":"Body Scan","excluded":false},{"id":"clarity-balance-mlw:7","name":"Transcendental Raf","excluded":false},{"id":"clarity-balance-mlw:8","name":"The Way","excluded":false},{"id":"clarity-balance-mlw:9","name":"Breath and Mobility","excluded":false},{"id":"connection-privilege-gratitude:0","name":"Molly Journal","excluded":false},{"id":"connection-privilege-gratitude:1","name":"Gap vs Gain","excluded":false},{"id":"fuel:0","name":"Green drink","excluded":false},{"id":"fuel:1","name":"Yakult","excluded":false},{"id":"fuel:2","name":"30g Protein","excluded":false},{"id":"fuel:3","name":"Creatine","excluded":false},{"id":"fuel:4","name":"Vitamins","excluded":false},{"id":"fuel:5","name":"Fish Oil","excluded":false},{"id":"fuel:6","name":"10g Fibre","excluded":false},{"id":"fuel:7","name":"500mL+ of Water finished","excluded":false},{"id":"home-refuge-sanctuary:0","name":"Washing on","excluded":false},{"id":"home-refuge-sanctuary:1","name":"Beds made","excluded":false},{"id":"home-refuge-sanctuary:2","name":"Vacuum","excluded":false},{"id":"home-refuge-sanctuary:3","name":"Dishes","excluded":false},{"id":"home-refuge-sanctuary:4","name":"Dry Dishes","excluded":false},{"id":"home-refuge-sanctuary:5","name":"Dry dishes away","excluded":false},{"id":"home-refuge-sanctuary:6","name":"Washing away","excluded":false},{"id":"home-refuge-sanctuary:7","name":"Tidy Tables","excluded":false},{"id":"home-refuge-sanctuary:8","name":"Washing hung","excluded":false},{"id":"home-refuge-sanctuary:9","name":"Inbox table and Calendar","excluded":false},{"id":"home-refuge-sanctuary:10","name":"Wipe down Kitchen benches","excluded":false},{"id":"home-refuge-sanctuary:11","name":"Bring in washing if required","excluded":false},{"id":"home-refuge-sanctuary:12","name":"Bins","excluded":false},{"id":"personal-hygiene:0","name":"Teeth","excluded":false},{"id":"personal-hygiene:1","name":"Floss","excluded":false},{"id":"personal-hygiene:2","name":"Cut nails","excluded":false},{"id":"personal-hygiene:3","name":"Trim beard","excluded":false},{"id":"personal-hygiene:4","name":"Shave","excluded":false},{"id":"personal-hygiene:5","name":"Tongue Scraping","excluded":false}],"entries":[]};
 
   var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -2564,9 +3334,18 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     synced: "Up to date",
     dirty: "Unsaved changes",
     syncing: "Syncing",
-    offline: "Offline - changes kept on this device",
+    offline: "Offline",
     "token-needed": "No token - add a GitHub token in Settings",
     "conflict-retrying": "Merging a remote change"
+  };
+
+  var VIEW_NAMES = ["grid", "mobile", "scoreboard", "settings"];
+
+  var VIEW_CONTAINERS = {
+    grid: "omx-view-grid",
+    mobile: "omx-view-mobile",
+    scoreboard: "omx-view-scoreboard",
+    settings: "omx-view-settings"
   };
 
   // -----------------------------------------------------------------------
@@ -2580,7 +3359,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     view: DEFAULTS.view,
     viewMode: DEFAULTS.viewMode,
     gridDays: DEFAULTS.gridDays,
-    mobileDate: null,
+    focusDate: null,
     queue: [],
     configDirty: false,
     flushTimer: null,
@@ -2592,8 +3371,33 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     importWarnings: [],
     exportPrimed: false,
     exportUrl: null,
+    settingsBuilt: false,
+    settingsFocusId: null,
     booted: false,
     lastError: null
+  };
+
+  // Settings-panel node references, populated once when app.js builds the panel.
+  var sref = {};
+
+  // id -> display name, rebuilt with the drag-and-drop rows; the aria-live announcements
+  // read it so they name the thing being moved rather than the handle label.
+  var dndNames = {};
+
+  // Drag-and-drop session state (pointer path and keyboard path share it).
+  var dnd = {
+    active: false,
+    mode: null,
+    scope: null,
+    row: null,
+    rowId: null,
+    rowName: "",
+    list: null,
+    startNext: null,
+    startIds: null,
+    pointerId: null,
+    handle: null,
+    indicator: null
   };
 
   // -----------------------------------------------------------------------
@@ -2643,11 +3447,24 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return typeof document === "undefined" ? null : document.getElementById(id);
   }
 
-  function el(tag, className, text) {
+  function el(tag, opts) {
     var node = document.createElement(tag);
-    if (className) node.className = className;
-    if (text !== undefined && text !== null) node.textContent = text;
+    if (opts) {
+      if (opts.className) node.className = opts.className;
+      if (opts.text !== undefined) node.textContent = opts.text;
+      if (opts.attrs) {
+        for (var k in opts.attrs) {
+          if (Object.prototype.hasOwnProperty.call(opts.attrs, k)) {
+            node.setAttribute(k, opts.attrs[k]);
+          }
+        }
+      }
+    }
     return node;
+  }
+
+  function entryKey(opId, dateIso) {
+    return opId + "|" + dateIso;
   }
 
   // -----------------------------------------------------------------------
@@ -2699,6 +3516,11 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return iso.slice(8, 10) + "/" + iso.slice(5, 7);
   }
 
+  function mediumDate(iso) {
+    var p = isoParts(iso);
+    return DOW[dowIndex(iso)] + " " + iso.slice(8, 10) + " " + MON[p.m - 1];
+  }
+
   function longDate(iso) {
     var p = isoParts(iso);
     return DOW[dowIndex(iso)] + " " + iso.slice(8, 10) + " " + MON[p.m - 1] + " " + p.y;
@@ -2709,7 +3531,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   }
 
   // -----------------------------------------------------------------------
-  // Engine access - every call is wrapped; a throw goes to the banner error path.
+  // Engine access - every call is wrapped; a throw goes to the pill error path.
   // -----------------------------------------------------------------------
 
   function engineCall(fn, fallback) {
@@ -2726,20 +3548,11 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   // Document helpers
   // -----------------------------------------------------------------------
 
+  // SEED_DOC is the one first-run document; a second in-code default would be a drift surface.
   function defaultDoc() {
-    if (SEED_DOC) {
-      var seeded = clone(SEED_DOC);
-      if (!Array.isArray(seeded.entries)) seeded.entries = [];
-      return seeded;
-    }
-    return {
-      schemaVersion: OM.engine ? OM.engine.SCHEMA_VERSION : 1,
-      owner: { userKey: "owner", displayName: "Owner" },
-      settings: OM.engine ? OM.engine.defaultSettings() : {},
-      categories: [],
-      ops: [],
-      entries: []
-    };
+    var seeded = clone(SEED_DOC);
+    if (!Array.isArray(seeded.entries)) seeded.entries = [];
+    return seeded;
   }
 
   function opsById(doc) {
@@ -2753,7 +3566,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     var map = {}, i;
     var entries = (doc && doc.entries) || [];
     for (i = 0; i < entries.length; i++) {
-      map[entries[i].op + "|" + entries[i].d] = entries[i].c;
+      map[entryKey(entries[i].op, entries[i].d)] = entries[i].c;
     }
     return map;
   }
@@ -2764,25 +3577,6 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       if (entries[i].op === opId && entries[i].d === dateIso) return entries[i].c;
     }
     return null;
-  }
-
-  function applyChangesToDoc(doc, changes) {
-    var entries = doc.entries || (doc.entries = []);
-    for (var i = 0; i < changes.length; i++) {
-      var ch = changes[i];
-      var idx = -1;
-      for (var j = 0; j < entries.length; j++) {
-        if (entries[j].d === ch.d && entries[j].op === ch.op) { idx = j; break; }
-      }
-      if (ch.c === null) {
-        if (idx !== -1) entries.splice(idx, 1);
-      } else if (idx !== -1) {
-        entries[idx] = { d: ch.d, op: ch.op, c: ch.c };
-      } else {
-        entries.push({ d: ch.d, op: ch.op, c: ch.c });
-      }
-    }
-    return doc;
   }
 
   // -----------------------------------------------------------------------
@@ -2818,7 +3612,8 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         label: codes[k].label,
         num: codes[k].num,
         den: codes[k].den,
-        counterLabel: codes[k].counterLabel || codes[k].label
+        counterLabel: codes[k].counterLabel || codes[k].label,
+        slotIndex: out.length
       });
     }
     return out;
@@ -2850,13 +3645,22 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   // window with zero logged entries still comes back as a real, non-null 0 - correct for the
   // scoring math, but indistinguishable from "nothing was ever logged" unless something also
   // checks the raw entries. app.js owns display (INTERFACES.md section 4), so it makes that
-  // check here: no entry at all inside [windowStart, windowEnd] displays as no-data, never "0%".
+  // check here: no entry at all inside the window displays as no-data, never a zero percent.
   function windowHasEntries(loggedDates, windowStart, windowEnd) {
     for (var d in loggedDates) {
       if (!hasOwn(loggedDates, d)) continue;
       if (d >= windowStart && d <= windowEnd) return true;
     }
     return false;
+  }
+
+  function resolveFocusDate(axis, today) {
+    var wanted = state.focusDate;
+    if (!wanted) return today;
+    for (var i = 0; i < axis.length; i++) {
+      if (axis[i].d === wanted) return wanted;
+    }
+    return today;
   }
 
   function buildDerived() {
@@ -2870,7 +3674,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
 
     var target = (settings.scoring && isNum(settings.scoring.target)) ? settings.scoring.target : null;
     var axis = buildDateAxis(today, state.gridDays);
-    var axisStart = axis.length ? axis[0].d : today;
+    var focusDate = resolveFocusDate(axis, today);
 
     var dash = engineCall(function () { return OM.engine.dashboard(doc, today); }, null);
     var summaries = dash ? dash.categories : [];
@@ -2878,6 +3682,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     var opMap = opsById(doc);
     var cellIndex = entryMap(doc);
     var trailDefs = settings.trails || [];
+    var docOps = doc.ops || [];
 
     var categories = [];
     var docCats = {};
@@ -2888,17 +3693,24 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       var s = summaries[i];
       var cat = docCats[s.id] || { slots: [] };
 
-      var ops = [];
+      // Display order is the doc.ops array order (INTERFACES.md section 4.3); slotIndex keeps
+      // reporting the position in categories[].slots, which is identity and never reordered.
       var slots = cat.slots || [];
-      for (j = 0; j < slots.length; j++) {
-        var op = opMap[slots[j]];
-        if (!op || op.excluded === true) continue;
+      var slotIndexOf = {};
+      for (j = 0; j < slots.length; j++) slotIndexOf[slots[j]] = j;
+
+      var ops = [];
+      for (j = 0; j < docOps.length; j++) {
+        var op = docOps[j];
+        if (!op || !hasOwn(slotIndexOf, op.id)) continue;
+        if (op.excluded === true) continue;
+        if (!opMap[op.id]) continue;
         ops.push({
           id: op.id,
           name: op.name,
           excluded: false,
           target: typeof op.target === "string" && op.target.length ? op.target : null,
-          slotIndex: j
+          slotIndex: slotIndexOf[op.id]
         });
       }
 
@@ -2915,7 +3727,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       for (j = 0; j < ops.length; j++) {
         var hitCount = 0, scorable = 0;
         for (var a = 0; a < axis.length; a++) {
-          var key = ops[j].id + "|" + axis[a].d;
+          var key = entryKey(ops[j].id, axis[a].d);
           var c = cellIndex[key];
           if (c === undefined || c === null) continue;
           cells[key] = c;
@@ -2942,7 +3754,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         for (var td = 0; td < trailDefs.length; td++) {
           if (trailDefs[td] && trailDefs[td].id === t.trailId) { def = trailDefs[td]; break; }
         }
-        // Engine already nulls the score for insufficient-history / no-active-ops / all-bye
+        // Engine already nulls the score for insufficient-history / no-active-items / all-bye
         // windows (t.nullReason set). On top of that, treat a window with zero logged entries
         // as no-data too, even though the engine legitimately computed a real 0 for it - a
         // window where the user actually logged misses/adjusts keeps its real 0 and band colour.
@@ -2980,7 +3792,6 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       categories.push({
         id: s.id,
         name: s.name,
-        order: isNum(cat.order) ? cat.order : i + 1,
         opCount: s.opCount,
         today: {
           d: s.today.d,
@@ -3014,6 +3825,8 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return deepFreeze({
       todayIso: today,
       todayLabel: longDate(today),
+      focusDate: focusDate,
+      focusDateLabel: mediumDate(focusDate),
       target: target,
       targetLabel: target === null ? "--" : String(target) + "%",
       bands: bands,
@@ -3021,7 +3834,6 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       cycle: cycle,
       gridDays: state.gridDays,
       dateAxis: axis,
-      axisStart: axisStart,
       categories: categories,
       overall: {
         todayScore: overallScore,
@@ -3041,25 +3853,25 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   }
 
   // -----------------------------------------------------------------------
-  // Sync banner
+  // Sync pill
   // -----------------------------------------------------------------------
 
   function setSync(nextState, message) {
     state.sync.state = nextState;
     state.sync.message = message || SYNC_MESSAGES[nextState] || nextState;
-    paintBanner();
+    paintPill();
   }
 
-  function paintBanner() {
-    var banner = byId("omx-sync-banner");
-    if (!banner) return;
-    banner.setAttribute("data-state", state.sync.state);
-    var msg = banner.querySelector(".omx-app-sync-message");
+  function paintPill() {
+    var pill = byId("omx-sync-banner");
+    if (!pill) return;
+    pill.setAttribute("data-state", state.sync.state);
+    var msg = pill.querySelector(".omx-app-sync-message");
     if (msg) msg.textContent = state.sync.message;
-    var dirty = banner.querySelector(".omx-app-sync-dirty");
+    var dirty = pill.querySelector(".omx-app-sync-dirty");
     var count = state.queue.length + (state.configDirty ? 1 : 0);
-    if (dirty) dirty.textContent = count > 0 ? String(count) + " pending" : "";
-    var btn = banner.querySelector(".omx-app-sync-token-btn");
+    if (dirty) dirty.textContent = count > 0 ? String(count) : "";
+    var btn = pill.querySelector(".omx-app-sync-token-btn");
     if (btn) btn.hidden = state.sync.state !== "token-needed";
   }
 
@@ -3176,7 +3988,8 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     var incoming = raw || cachedDoc() || defaultDoc();
     var result = engineCall(function () { return OM.engine.migrate(incoming); }, null);
     state.doc = result ? result.doc : incoming;
-    if (state.queue.length) applyChangesToDoc(state.doc, state.queue);
+    // OpsMatrix.storage.applyChanges is the one entry-application util (INTERFACES.md 3.3).
+    if (state.queue.length) OM.storage.applyChanges(state.doc, state.queue);
     persistDocLocally();
     // A device-local adapter has no remote to learn the document from, so hand it the whole
     // thing; otherwise its first writeEntry would build a document out of ticks alone.
@@ -3199,8 +4012,8 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return state.adapter.readAll().then(function (res) {
       var hadRemoteDoc = !!(res && res.doc);
       adoptDoc(res && res.doc);
-      // First run against an empty data repo: the seed we just adopted has never been
-      // committed, so mark it dirty and let the normal flush write it.
+      // First run against an empty data repo: the seed just adopted has never been
+      // committed, so mark it dirty and the normal flush writes it.
       if (!hadRemoteDoc && res && res.meta && res.meta.source === "github") state.configDirty = true;
       state.lastSyncIso = (res && res.meta && res.meta.fetchedAt) || new Date().toISOString();
       if (state.queue.length || state.configDirty) {
@@ -3256,8 +4069,8 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return work.then(function (res) {
       state.flushing = false;
       var flushed = {};
-      for (var i = 0; i < batch.length; i++) flushed[batch[i].d + "|" + batch[i].op] = true;
-      state.queue = state.queue.filter(function (ch) { return !flushed[ch.d + "|" + ch.op]; });
+      for (var i = 0; i < batch.length; i++) flushed[entryKey(batch[i].op, batch[i].d)] = true;
+      state.queue = state.queue.filter(function (ch) { return !flushed[entryKey(ch.op, ch.d)]; });
       persistQueue();
       state.lastSyncIso = (res && res.meta && res.meta.fetchedAt) || new Date().toISOString();
       if (state.queue.length || state.configDirty) {
@@ -3301,10 +4114,6 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       node = node[k];
     }
     var leaf = parts[parts.length - 1].k;
-    if (leaf === "__key") {
-      // rename the map key that holds this node (used by the code editor)
-      return false;
-    }
     node[leaf] = value;
     return true;
   }
@@ -3339,10 +4148,29 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       rebuilt[k === oldKey ? newKey : k] = codes[k];
     }
     state.doc.settings.codes = rebuilt;
+
+    // Renaming a key rewrites history, and history is entries. writeConfig deliberately leaves
+    // entries to writeEntry (INTERFACES.md 4.4), so every rewritten row also goes out as a
+    // {d, op, c} change record - otherwise the rename would land locally and never be committed.
     var entries = state.doc.entries || [];
-    for (var i = 0; i < entries.length; i++) {
-      if (entries[i].c === oldKey) entries[i].c = newKey;
+    var rewritten = [];
+    var i;
+    for (i = 0; i < entries.length; i++) {
+      if (entries[i].c !== oldKey) continue;
+      entries[i].c = newKey;
+      rewritten.push({ d: entries[i].d, op: entries[i].op, c: newKey });
     }
+    if (rewritten.length) {
+      var touched = {};
+      for (i = 0; i < rewritten.length; i++) {
+        touched[entryKey(rewritten[i].op, rewritten[i].d)] = true;
+      }
+      state.queue = state.queue.filter(function (ch) {
+        return !touched[entryKey(ch.op, ch.d)];
+      }).concat(rewritten);
+      persistQueue();
+    }
+
     markConfigDirty();
   }
 
@@ -3365,16 +4193,16 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   }
 
   var handlers = {
-    onTick: function (opId, dateISO, nextCode) {
+    onTick: function (opId, dateIso, nextCode) {
       if (!state.doc) return;
       var settings = state.doc.settings || {};
       var cycle = codeRows(settings).map(function (c) { return c.key; });
       cycle.push(null);
-      var current = codeAt(state.doc, opId, dateISO);
+      var current = codeAt(state.doc, opId, dateIso);
       var code = nextCode === undefined ? nextInCycle(cycle, current) : nextCode;
-      var change = { d: dateISO, op: opId, c: code === undefined ? null : code };
+      var change = { d: dateIso, op: opId, c: code === undefined ? null : code };
 
-      applyChangesToDoc(state.doc, [change]);
+      OM.storage.applyChanges(state.doc, [change]);
       persistDocLocally();
 
       state.queue = state.queue.filter(function (ch) {
@@ -3422,6 +4250,12 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         state.queue = [];
         persistQueue();
         persistDocLocally();
+        if (!state.adapter) {
+          state.configDirty = true;
+          setSync("dirty", SYNC_MESSAGES.dirty);
+          render();
+          return;
+        }
         setSync("syncing", SYNC_MESSAGES.syncing);
         render();
         state.adapter.bulkImport(state.doc).then(function () {
@@ -3482,14 +4316,14 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     },
 
     onViewSwitch: function (name) {
-      if (["grid", "mobile", "scoreboard", "settings"].indexOf(name) === -1) return;
+      if (VIEW_NAMES.indexOf(name) === -1) return;
       state.view = name;
       lsSet(KEYS.VIEW, name);
       render();
     },
 
-    onDateChange: function (dateISO) {
-      state.mobileDate = dateISO;
+    onDateChange: function (dateIso) {
+      state.focusDate = dateIso;
       render();
     },
 
@@ -3517,7 +4351,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       }
     },
 
-    onAddCategory: function (name, startedOnISO) {
+    onAddCategory: function (name, startedOnIso) {
       if (!state.doc || !name) return;
       var base = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
       if (!base) base = "category";
@@ -3529,31 +4363,109 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       cats.push({
         id: id,
         name: String(name),
-        startedOn: startedOnISO || todayIso(),
+        startedOn: startedOnIso || todayIso(),
         slots: [],
         order: cats.length + 1
       });
+      markConfigDirty();
+      render();
+    },
+
+    // SETTINGS ONLY - rewrites categories[].order to 1..n in the new visual sequence.
+    onReorderCategories: function (orderedCategoryIds) {
+      if (!state.doc || !Array.isArray(orderedCategoryIds)) return;
+      var cats = state.doc.categories || [];
+      var placed = {};
+      var seq = 0, i, j;
+      for (i = 0; i < orderedCategoryIds.length; i++) {
+        var id = orderedCategoryIds[i];
+        if (placed[id]) continue;
+        for (j = 0; j < cats.length; j++) {
+          if (cats[j].id !== id) continue;
+          seq += 1;
+          cats[j].order = seq;
+          placed[id] = true;
+          break;
+        }
+      }
+      for (i = 0; i < cats.length; i++) {
+        if (placed[cats[i].id]) continue;
+        seq += 1;
+        cats[i].order = seq;
+      }
+      markConfigDirty();
+      render();
+    },
+
+    // SETTINGS ONLY - permutes doc.ops (INTERFACES.md section 4.3). The category's items are
+    // written back into the same doc.ops index positions they already occupied, so no other
+    // category moves. categories[].slots is never touched.
+    onReorderOps: function (categoryId, orderedOpIds) {
+      if (!state.doc || !Array.isArray(orderedOpIds)) return;
+      var cats = state.doc.categories || [];
+      var ops = state.doc.ops || [];
+      var cat = null, i;
+      for (i = 0; i < cats.length; i++) { if (cats[i].id === categoryId) { cat = cats[i]; break; } }
+      if (!cat) return;
+
+      var member = {};
+      var slots = cat.slots || [];
+      for (i = 0; i < slots.length; i++) member[slots[i]] = true;
+
+      var positions = [];
+      var byOpId = {};
+      for (i = 0; i < ops.length; i++) {
+        if (!ops[i] || !ops[i].id) continue;
+        byOpId[ops[i].id] = ops[i];
+        if (member[ops[i].id]) positions.push(i);
+      }
+
+      var used = {};
+      var seq = [];
+      for (i = 0; i < orderedOpIds.length; i++) {
+        var candidate = byOpId[orderedOpIds[i]];
+        if (!candidate || used[candidate.id] || !member[candidate.id]) continue;
+        used[candidate.id] = true;
+        seq.push(candidate);
+      }
+      for (i = 0; i < positions.length; i++) {
+        var existing = ops[positions[i]];
+        if (!existing || used[existing.id]) continue;
+        used[existing.id] = true;
+        seq.push(existing);
+      }
+      if (seq.length !== positions.length) return;
+
+      for (i = 0; i < positions.length; i++) ops[positions[i]] = seq[i];
       markConfigDirty();
       render();
     }
   };
 
   // -----------------------------------------------------------------------
-  // Settings panel (app.js owns it; it is not a view module)
+  // Settings panel - app.js builds the whole DOM (INTERFACES.md section 7.5)
   // -----------------------------------------------------------------------
 
   function field(labelText, input) {
-    var wrap = el("label", "omx-app-field");
-    wrap.appendChild(el("span", null, labelText));
+    var wrap = el("label", { className: "omx-app-field" });
+    wrap.appendChild(el("span", { className: "omx-app-field-label", text: labelText }));
     wrap.appendChild(input);
     return wrap;
   }
 
-  function textInput(value, onChange, type) {
+  function textInput(value, onChange) {
     var input = document.createElement("input");
-    input.type = type || "text";
+    input.type = "text";
     input.value = value === undefined || value === null ? "" : String(value);
     input.addEventListener("change", function () { onChange(input.value); });
+    return input;
+  }
+
+  function passwordInput() {
+    var input = document.createElement("input");
+    input.type = "password";
+    input.autocomplete = "off";
+    input.spellcheck = false;
     return input;
   }
 
@@ -3573,187 +4485,810 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     return input;
   }
 
-  function button(text, onClick, className) {
-    var b = el("button", className || null, text);
-    b.type = "button";
-    b.addEventListener("click", onClick);
-    return b;
+  function selectInput(options, onChange) {
+    var input = document.createElement("select");
+    for (var i = 0; i < options.length; i++) {
+      var opt = document.createElement("option");
+      opt.value = options[i][0];
+      opt.textContent = options[i][1];
+      input.appendChild(opt);
+    }
+    input.addEventListener("change", function () { onChange(input.value); });
+    return input;
+  }
+
+  function plainButton(text, onClick) {
+    var node = el("button", { className: "omx-app-btn", text: text, attrs: { type: "button" } });
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function primaryButton(text, onClick) {
+    var node = el("button", {
+      className: "omx-app-btn omx-app-btn-primary", text: text, attrs: { type: "button" }
+    });
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function dangerButton(text, onClick) {
+    var node = el("button", {
+      className: "omx-app-btn omx-app-btn-danger", text: text, attrs: { type: "button" }
+    });
+    node.addEventListener("click", onClick);
+    return node;
+  }
+
+  function actionsRow() {
+    return el("div", { className: "omx-app-actions" });
+  }
+
+  function helpText(text) {
+    return el("p", { className: "omx-app-help-text", text: text });
+  }
+
+  function settingsCard(sectionName, titleText, wide) {
+    var card = wide
+      ? el("section", {
+        className: "omx-app-settings-card omx-app-settings-card-wide",
+        attrs: { "data-settings-section": sectionName }
+      })
+      : el("section", {
+        className: "omx-app-settings-card",
+        attrs: { "data-settings-section": sectionName }
+      });
+    card.appendChild(el("h2", { className: "omx-app-settings-card-title", text: titleText }));
+    return card;
+  }
+
+  function miniTable(headings) {
+    var table = el("table", { className: "omx-app-table" });
+    var head = el("thead");
+    var headRow = el("tr", { className: "omx-app-table-head-row" });
+    for (var i = 0; i < headings.length; i++) {
+      headRow.appendChild(el("th", {
+        className: "omx-app-table-head-cell", text: headings[i], attrs: { scope: "col" }
+      }));
+    }
+    head.appendChild(headRow);
+    table.appendChild(head);
+    var body = el("tbody");
+    table.appendChild(body);
+    return { table: table, body: body };
+  }
+
+  function tableRow() {
+    return el("tr", { className: "omx-app-table-row" });
+  }
+
+  function tableCell(child) {
+    var cell = el("td", { className: "omx-app-table-cell" });
+    if (child) cell.appendChild(child);
+    return cell;
+  }
+
+  // --- connection ---------------------------------------------------------
+
+  function buildConnectionCard() {
+    var card = settingsCard("connection", "Connection", false);
+
+    sref.pat = passwordInput();
+    sref.pat.id = "omx-app-pat";
+    card.appendChild(field("Personal access token", sref.pat));
+
+    var actions = actionsRow();
+    var save = primaryButton("Save token", function () {
+      handlers.onPatSave(sref.pat.value);
+      sref.pat.value = "";
+    });
+    save.id = "omx-app-pat-save";
+    var test = plainButton("Test", function () { handlers.onPatTest(); });
+    test.id = "omx-app-pat-test";
+    actions.appendChild(save);
+    actions.appendChild(test);
+    card.appendChild(actions);
+
+    sref.repoOwner = textInput("", function (v) { handlers.onConfigChange("__local.repo.owner", v); });
+    sref.repoOwner.id = "omx-app-repo-owner";
+    card.appendChild(field("Repo owner", sref.repoOwner));
+
+    sref.repoName = textInput("", function (v) { handlers.onConfigChange("__local.repo.name", v); });
+    sref.repoName.id = "omx-app-repo-name";
+    card.appendChild(field("Repo name", sref.repoName));
+
+    sref.repoPath = textInput("", function (v) { handlers.onConfigChange("__local.repo.path", v); });
+    sref.repoPath.id = "omx-app-repo-path";
+    card.appendChild(field("File path", sref.repoPath));
+
+    sref.repoBranch = textInput("", function (v) { handlers.onConfigChange("__local.repo.branch", v); });
+    sref.repoBranch.id = "omx-app-repo-branch";
+    card.appendChild(field("Branch", sref.repoBranch));
+
+    card.appendChild(helpText(
+      "Fine-grained token with Contents read and write on this one repo. Stored in this browser only, never committed."
+    ));
+    return card;
+  }
+
+  // --- scoring ------------------------------------------------------------
+
+  function buildScoringCard() {
+    var card = settingsCard("scoring", "Scoring", false);
+
+    sref.target = numberInput(null, function (v) {
+      handlers.onConfigChange("settings.scoring.target", v);
+    });
+    sref.target.id = "omx-app-target";
+    sref.target.min = "0";
+    sref.target.max = "100";
+    card.appendChild(field("Target %", sref.target));
+
+    sref.bands = el("div", { className: "omx-app-table-host" });
+    sref.bands.id = "omx-app-bands";
+    card.appendChild(sref.bands);
+
+    var actions = actionsRow();
+    var add = plainButton("Add band", function () {
+      var scoring = state.doc.settings.scoring || (state.doc.settings.scoring = { bands: [] });
+      if (!Array.isArray(scoring.bands)) scoring.bands = [];
+      scoring.bands.push({ id: "band" + scoring.bands.length, label: "New band", min: 0 });
+      markConfigDirty();
+      render();
+    });
+    add.id = "omx-app-band-add";
+    actions.appendChild(add);
+    card.appendChild(actions);
+    return card;
   }
 
   function renderBands() {
-    var host = byId("omx-app-bands");
+    var host = sref.bands;
     if (!host) return;
     host.textContent = "";
     var bands = (state.doc.settings.scoring && state.doc.settings.scoring.bands) || [];
+    var table = miniTable(["Id", "Label", "Min %", ""]);
     bands.forEach(function (b, i) {
-      var row = el("div", "omx-app-repeat-row");
-      row.appendChild(field("Id", textInput(b.id, function (v) {
+      var row = tableRow();
+      row.appendChild(tableCell(textInput(b.id, function (v) {
         handlers.onConfigChange("settings.scoring.bands[" + i + "].id", v);
       })));
-      row.appendChild(field("Label", textInput(b.label, function (v) {
+      row.appendChild(tableCell(textInput(b.label, function (v) {
         handlers.onConfigChange("settings.scoring.bands[" + i + "].label", v);
       })));
-      row.appendChild(field("Min %", numberInput(b.min, function (v) {
+      row.appendChild(tableCell(numberInput(b.min, function (v) {
         handlers.onConfigChange("settings.scoring.bands[" + i + "].min", v);
       })));
-      row.appendChild(button("Remove", function () {
+      row.appendChild(tableCell(dangerButton("Remove", function () {
         bands.splice(i, 1);
         markConfigDirty();
         render();
-      }));
-      host.appendChild(row);
+      })));
+      table.body.appendChild(row);
     });
+    host.appendChild(table.table);
+  }
+
+  // --- trails -------------------------------------------------------------
+
+  function buildTrailsCard() {
+    var card = settingsCard("trails", "Trails", false);
+    sref.trails = el("div", { className: "omx-app-table-host" });
+    sref.trails.id = "omx-app-trails";
+    card.appendChild(sref.trails);
+    card.appendChild(helpText(
+      "Four rolling averages, always. A window ends yesterday and never includes today."
+    ));
+    return card;
   }
 
   function renderTrails() {
-    var host = byId("omx-app-trails");
+    var host = sref.trails;
     if (!host) return;
     host.textContent = "";
     var trails = state.doc.settings.trails || [];
+    var table = miniTable(["Label", "Days", "On dashboard"]);
     trails.forEach(function (t, i) {
-      var row = el("div", "omx-app-repeat-row");
-      row.appendChild(field("Label", textInput(t.label, function (v) {
+      var row = tableRow();
+      row.appendChild(tableCell(textInput(t.label, function (v) {
         handlers.onConfigChange("settings.trails[" + i + "].label", v);
       })));
-      row.appendChild(field("Days", numberInput(t.days, function (v) {
+      row.appendChild(tableCell(numberInput(t.days, function (v) {
         handlers.onConfigChange("settings.trails[" + i + "].days", Math.max(1, Math.trunc(v || 1)));
       })));
-      row.appendChild(field("On dashboard", checkboxInput(t.showOnDashboard, function (v) {
+      row.appendChild(tableCell(checkboxInput(t.showOnDashboard, function (v) {
         handlers.onConfigChange("settings.trails[" + i + "].showOnDashboard", v);
       })));
-      host.appendChild(row);
+      table.body.appendChild(row);
     });
+    host.appendChild(table.table);
+  }
+
+  // --- codes --------------------------------------------------------------
+
+  function buildCodesCard() {
+    var card = settingsCard("codes", "Codes", false);
+    sref.codes = el("div", { className: "omx-app-table-host" });
+    sref.codes.id = "omx-app-codes";
+    card.appendChild(sref.codes);
+
+    var actions = actionsRow();
+    var add = plainButton("Add code", function () {
+      var codes = state.doc.settings.codes || (state.doc.settings.codes = {});
+      var key = "X";
+      var alphabet = "XYZKLNPQRS";
+      for (var a = 0; a < alphabet.length; a++) {
+        if (!hasOwn(codes, alphabet.charAt(a))) { key = alphabet.charAt(a); break; }
+      }
+      codes[key] = {
+        label: "New code", num: 1, den: 1, counterLabel: "New code count", satisfiesEngagement: true
+      };
+      markConfigDirty();
+      render();
+    });
+    add.id = "omx-app-code-add";
+    actions.appendChild(add);
+    card.appendChild(actions);
+    return card;
   }
 
   function renderCodes() {
-    var host = byId("omx-app-codes");
+    var host = sref.codes;
     if (!host) return;
     host.textContent = "";
     var codes = state.doc.settings.codes || {};
+    var table = miniTable(["Key", "Label", "Num", "Den", "Counter", ""]);
     Object.keys(codes).forEach(function (key) {
       var c = codes[key];
-      var row = el("div", "omx-app-repeat-row");
-      var quoted = 'settings.codes["' + key + '"]';
+      var quoted = "settings.codes[\"" + key + "\"]";
+      var row = tableRow();
       if (key === "") {
-        row.appendChild(el("span", null, "Miss (no entry)"));
+        row.appendChild(tableCell(el("span", { text: "(blank)" })));
       } else {
-        row.appendChild(field("Key", textInput(key, function (v) {
+        row.appendChild(tableCell(textInput(key, function (v) {
           renameCode(key, String(v).trim());
           render();
         })));
       }
-      row.appendChild(field("Label", textInput(c.label, function (v) {
+      row.appendChild(tableCell(textInput(c.label, function (v) {
         handlers.onConfigChange(quoted + ".label", v);
       })));
-      row.appendChild(field("Num", numberInput(c.num, function (v) {
+      row.appendChild(tableCell(numberInput(c.num, function (v) {
         handlers.onConfigChange(quoted + ".num", v);
       })));
-      row.appendChild(field("Den", numberInput(c.den, function (v) {
+      row.appendChild(tableCell(numberInput(c.den, function (v) {
         handlers.onConfigChange(quoted + ".den", v);
       })));
-      row.appendChild(field("Counter label", textInput(c.counterLabel, function (v) {
+      row.appendChild(tableCell(textInput(c.counterLabel, function (v) {
         handlers.onConfigChange(quoted + ".counterLabel", v);
       })));
-      if (key !== "") {
-        row.appendChild(button("Remove", function () {
+      if (key === "") {
+        row.appendChild(tableCell(null));
+      } else {
+        row.appendChild(tableCell(dangerButton("Remove", function () {
           delete state.doc.settings.codes[key];
           markConfigDirty();
           render();
-        }));
+        })));
       }
-      host.appendChild(row);
+      table.body.appendChild(row);
     });
+    host.appendChild(table.table);
   }
 
-  function renderCategories() {
-    var host = byId("omx-app-categories");
-    if (!host) return;
-    host.textContent = "";
-    var cats = state.doc.categories || [];
-    var ops = state.doc.ops || [];
-    var opIndex = {};
-    ops.forEach(function (o, i) { opIndex[o.id] = i; });
+  // --- display ------------------------------------------------------------
 
-    cats.forEach(function (cat, ci) {
-      var block = el("div", "omx-app-repeat-row");
+  function buildDisplayCard() {
+    var card = settingsCard("display", "Display", false);
 
-      block.appendChild(field("Name", textInput(cat.name, function (v) {
-        handlers.onConfigChange("categories[" + ci + "].name", v);
-      })));
-      block.appendChild(field("Started on", textInput(cat.startedOn, function (v) {
-        handlers.onConfigChange("categories[" + ci + "].startedOn", v);
-      })));
-      block.appendChild(field("Order", numberInput(cat.order, function (v) {
-        handlers.onConfigChange("categories[" + ci + "].order", v);
-      })));
+    sref.timezone = textInput("", function (v) { handlers.onConfigChange("settings.timezone", v); });
+    sref.timezone.id = "omx-app-timezone";
+    card.appendChild(field("Timezone (IANA)", sref.timezone));
 
-      var opList = el("div", "omx-app-repeat-list");
-      (cat.slots || []).forEach(function (slotId) {
-        var oi = opIndex[slotId];
-        if (oi === undefined) return;
-        var op = ops[oi];
-        var opRow = el("div", "omx-app-repeat-row");
-        opRow.appendChild(field("Item", textInput(op.name, function (v) {
-          handlers.onConfigChange("ops[" + oi + "].name", v);
-        })));
-        opRow.appendChild(field("Target", textInput(op.target, function (v) {
-          handlers.onConfigChange("ops[" + oi + "].target", v);
-        })));
-        opRow.appendChild(field("Excluded", checkboxInput(op.excluded, function (v) {
-          handlers.onConfigChange("ops[" + oi + "].excluded", v);
-        })));
-        opList.appendChild(opRow);
-      });
-      block.appendChild(opList);
+    sref.dateFormat = textInput("", function (v) { handlers.onConfigChange("settings.dateFormat", v); });
+    sref.dateFormat.id = "omx-app-date-format";
+    card.appendChild(field("Date format", sref.dateFormat));
 
-      var nameBox = document.createElement("input");
-      nameBox.type = "text";
-      nameBox.placeholder = "New item name";
-      block.appendChild(nameBox);
-      block.appendChild(button("Add item", function () {
-        var v = nameBox.value.trim();
-        if (v) handlers.onAddOp(cat.id, v);
-      }));
-
-      host.appendChild(block);
+    sref.lastNDays = numberInput(null, function (v) {
+      handlers.onConfigChange("settings.dashboard.lastNDays", Math.max(1, Math.trunc(v || 1)));
     });
+    sref.lastNDays.id = "omx-app-last-n-days";
+    sref.lastNDays.min = "1";
+    card.appendChild(field("Dashboard last N days", sref.lastNDays));
+
+    sref.gridDays = numberInput(null, function (v) {
+      handlers.onConfigChange("__local.grid.days", v);
+    });
+    sref.gridDays.id = "omx-app-grid-days";
+    sref.gridDays.min = "1";
+    card.appendChild(field("Grid days", sref.gridDays));
+
+    sref.viewMode = selectInput(
+      [["auto", "Auto"], ["desktop", "Desktop"], ["mobile", "Mobile"]],
+      function (v) { handlers.onConfigChange("__local.viewmode", v); }
+    );
+    sref.viewMode.id = "omx-app-viewmode";
+    card.appendChild(field("View mode", sref.viewMode));
+    return card;
+  }
+
+  // --- data ---------------------------------------------------------------
+
+  function buildDataCard() {
+    var card = settingsCard("data", "Data", false);
+
+    sref.exportLink = el("a", {
+      className: "omx-app-export-link", text: "Export JSON", attrs: { download: "" }
+    });
+    sref.exportLink.id = "omx-app-export";
+    sref.exportLink.addEventListener("click", function (evt) {
+      if (state.exportPrimed) return;
+      evt.preventDefault();
+      handlers.onExport();
+    });
+    card.appendChild(sref.exportLink);
+
+    var file = document.createElement("input");
+    file.type = "file";
+    file.id = "omx-app-import";
+    file.accept = "application/json,.json";
+    file.addEventListener("change", function () {
+      if (file.files && file.files.length) handlers.onImport(file.files[0]);
+    });
+    card.appendChild(field("Import JSON", file));
+
+    sref.importWarnings = el("div", { className: "omx-app-import-warnings" });
+    sref.importWarnings.id = "omx-app-import-warnings";
+    card.appendChild(sref.importWarnings);
+    return card;
   }
 
   function renderImportWarnings() {
-    var host = byId("omx-app-import-warnings");
+    var host = sref.importWarnings;
     if (!host) return;
     host.textContent = "";
     if (!state.importWarnings.length) return;
-    host.appendChild(el("div", null, String(state.importWarnings.length) + " import warning(s)"));
-    var list = el("ul");
+    host.appendChild(el("div", {
+      className: "omx-app-import-warning-count",
+      text: String(state.importWarnings.length) + " import warning(s)"
+    }));
+    var list = el("ul", { className: "omx-app-import-warning-list" });
     state.importWarnings.slice(0, 50).forEach(function (w) {
-      list.appendChild(el("li", null, (w.code || "warning") + ": " + (w.message || "")));
+      list.appendChild(el("li", {
+        className: "omx-app-import-warning-item",
+        text: (w.code || "warning") + ": " + (w.message || "")
+      }));
     });
     host.appendChild(list);
+  }
+
+  // --- categories and items (drag and drop) -------------------------------
+
+  function buildCategoriesCard() {
+    var card = settingsCard("categories", "Categories and items", true);
+    card.appendChild(helpText(
+      "Drag a handle to reorder. Keyboard works too: focus a handle, press Space to lift it, " +
+      "Arrow Up or Arrow Down to move it, Space again to drop, Escape to cancel."
+    ));
+
+    sref.categories = el("div", {
+      className: "omx-app-dnd-list", attrs: { "data-dnd-scope": "category" }
+    });
+    sref.categories.id = "omx-app-categories";
+    card.appendChild(sref.categories);
+
+    dnd.indicator = el("div", { className: "omx-app-dnd-indicator" });
+    dnd.indicator.hidden = true;
+    card.appendChild(dnd.indicator);
+
+    sref.dndStatus = el("div", {
+      className: "omx-app-dnd-status omx-app-visually-hidden", attrs: { "aria-live": "polite" }
+    });
+    card.appendChild(sref.dndStatus);
+
+    var actions = actionsRow();
+    var add = plainButton("Add category", function () {
+      var name = window.prompt ? window.prompt("Category name") : null;
+      if (name) handlers.onAddCategory(name, todayIso());
+    });
+    add.id = "omx-app-category-add";
+    actions.appendChild(add);
+    card.appendChild(actions);
+
+    sref.categoriesCard = card;
+    wireDragAndDrop(sref.categories);
+    return card;
+  }
+
+  function categoryRowsInOrder() {
+    var cats = state.doc.categories || [];
+    var rows = [];
+    for (var i = 0; i < cats.length; i++) rows.push({ cat: cats[i], index: i });
+    rows.sort(function (a, b) {
+      var ao = isNum(a.cat.order) ? a.cat.order : a.index + 1;
+      var bo = isNum(b.cat.order) ? b.cat.order : b.index + 1;
+      if (ao !== bo) return ao - bo;
+      return a.index - b.index;
+    });
+    return rows;
+  }
+
+  function buildOpRow(op, opIndex) {
+    dndNames[op.id] = op.name;
+    var row = el("div", {
+      className: "omx-app-dnd-row",
+      attrs: { "data-dnd-scope": "op", "data-op-id": op.id }
+    });
+    row.appendChild(el("button", {
+      className: "omx-app-dnd-handle",
+      text: "⠿",
+      attrs: { type: "button", "aria-label": "Reorder " + op.name }
+    }));
+    var body = el("div", { className: "omx-app-dnd-body" });
+    var fields = el("div", { className: "omx-app-field-row" });
+    fields.appendChild(field("Item", textInput(op.name, function (v) {
+      handlers.onConfigChange("ops[" + opIndex + "].name", v);
+    })));
+    fields.appendChild(field("Target", textInput(op.target, function (v) {
+      handlers.onConfigChange("ops[" + opIndex + "].target", v);
+    })));
+    fields.appendChild(field("Excluded", checkboxInput(op.excluded, function (v) {
+      handlers.onConfigChange("ops[" + opIndex + "].excluded", v);
+    })));
+    body.appendChild(fields);
+    row.appendChild(body);
+    return row;
+  }
+
+  function buildCategoryRow(cat, catIndex, ops) {
+    dndNames[cat.id] = cat.name;
+    var row = el("div", {
+      className: "omx-app-dnd-row",
+      attrs: { "data-dnd-scope": "category", "data-category-id": cat.id }
+    });
+    row.appendChild(el("button", {
+      className: "omx-app-dnd-handle",
+      text: "⠿",
+      attrs: { type: "button", "aria-label": "Reorder " + cat.name }
+    }));
+
+    var body = el("div", { className: "omx-app-dnd-body" });
+    var fields = el("div", { className: "omx-app-field-row" });
+    fields.appendChild(field("Name", textInput(cat.name, function (v) {
+      handlers.onConfigChange("categories[" + catIndex + "].name", v);
+    })));
+    fields.appendChild(field("Started on", textInput(cat.startedOn, function (v) {
+      handlers.onConfigChange("categories[" + catIndex + "].startedOn", v);
+    })));
+    body.appendChild(fields);
+
+    var list = el("div", {
+      className: "omx-app-dnd-list", attrs: { "data-dnd-scope": "op" }
+    });
+    var member = {};
+    var slots = cat.slots || [];
+    var i;
+    for (i = 0; i < slots.length; i++) member[slots[i]] = true;
+    for (i = 0; i < ops.length; i++) {
+      if (!ops[i] || !member[ops[i].id]) continue;
+      list.appendChild(buildOpRow(ops[i], i));
+    }
+    body.appendChild(list);
+
+    var actions = actionsRow();
+    var nameBox = document.createElement("input");
+    nameBox.type = "text";
+    nameBox.className = "omx-app-new-op-name";
+    nameBox.placeholder = "New item name";
+    actions.appendChild(nameBox);
+    actions.appendChild(plainButton("Add item", function () {
+      var v = nameBox.value.trim();
+      if (v) handlers.onAddOp(cat.id, v);
+    }));
+    body.appendChild(actions);
+
+    row.appendChild(body);
+    return row;
+  }
+
+  function renderCategories() {
+    var host = sref.categories;
+    if (!host) return;
+    host.textContent = "";
+    dndNames = {};
+    var ops = state.doc.ops || [];
+    var rows = categoryRowsInOrder();
+    for (var i = 0; i < rows.length; i++) {
+      host.appendChild(buildCategoryRow(rows[i].cat, rows[i].index, ops));
+    }
+    restoreDndFocus();
+  }
+
+  function restoreDndFocus() {
+    var wanted = state.settingsFocusId;
+    state.settingsFocusId = null;
+    if (!wanted || !sref.categories) return;
+    var rows = sref.categories.querySelectorAll(".omx-app-dnd-row");
+    for (var i = 0; i < rows.length; i++) {
+      var id = rows[i].getAttribute("data-category-id") || rows[i].getAttribute("data-op-id");
+      if (id !== wanted) continue;
+      var handle = rows[i].querySelector(".omx-app-dnd-handle");
+      if (handle && handle.focus) handle.focus();
+      return;
+    }
+  }
+
+  // --- drag and drop machinery -------------------------------------------
+
+  function dndRowsOf(list) {
+    var out = [];
+    if (!list) return out;
+    var kids = list.children;
+    for (var i = 0; i < kids.length; i++) {
+      if (!kids[i].getAttribute) continue;
+      if (!kids[i].getAttribute("data-dnd-scope")) continue;
+      out.push(kids[i]);
+    }
+    return out;
+  }
+
+  function dndIdOf(row) {
+    if (!row || !row.getAttribute) return null;
+    return row.getAttribute("data-dnd-scope") === "category"
+      ? row.getAttribute("data-category-id")
+      : row.getAttribute("data-op-id");
+  }
+
+  function dndIdsOf(list) {
+    var rows = dndRowsOf(list);
+    var ids = [];
+    for (var i = 0; i < rows.length; i++) ids.push(dndIdOf(rows[i]));
+    return ids;
+  }
+
+  function dndIdsWithIndicator() {
+    var ids = [];
+    var kids = dnd.list.children;
+    var placed = false;
+    for (var i = 0; i < kids.length; i++) {
+      var node = kids[i];
+      if (node === dnd.indicator) { ids.push(dnd.rowId); placed = true; continue; }
+      if (node === dnd.row) continue;
+      if (!node.getAttribute || !node.getAttribute("data-dnd-scope")) continue;
+      ids.push(dndIdOf(node));
+    }
+    if (!placed) ids.push(dnd.rowId);
+    return ids;
+  }
+
+  function sameIds(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (var i = 0; i < a.length; i++) { if (a[i] !== b[i]) return false; }
+    return true;
+  }
+
+  function dndAnnounce(message) {
+    if (sref.dndStatus) sref.dndStatus.textContent = message;
+  }
+
+  function dndPositionMessage(verb) {
+    var rows = dnd.mode === "pointer" ? dndIdsWithIndicator() : dndIdsOf(dnd.list);
+    var at = rows.indexOf(dnd.rowId) + 1;
+    return dnd.rowName + verb + String(at) + " of " + String(rows.length);
+  }
+
+  function dndDetachIndicator() {
+    if (!dnd.indicator) return;
+    dnd.indicator.hidden = true;
+    if (sref.categoriesCard && sref.dndStatus && dnd.indicator.parentNode !== sref.categoriesCard) {
+      sref.categoriesCard.insertBefore(dnd.indicator, sref.dndStatus);
+    }
+  }
+
+  function dndPlaceIndicator(target, after) {
+    if (!dnd.indicator || !dnd.list) return;
+    dnd.indicator.hidden = false;
+    if (after) dnd.list.insertBefore(dnd.indicator, target.nextSibling);
+    else dnd.list.insertBefore(dnd.indicator, target);
+  }
+
+  function dndStart(row, mode) {
+    var list = row.parentNode;
+    dnd.active = true;
+    dnd.mode = mode;
+    dnd.scope = row.getAttribute("data-dnd-scope");
+    dnd.row = row;
+    dnd.rowId = dndIdOf(row);
+    dnd.rowName = dndNames[dnd.rowId] || "";
+    dnd.list = list;
+    dnd.startNext = row.nextSibling;
+    dnd.startIds = dndIdsOf(list);
+    if (mode === "pointer") {
+      row.setAttribute("data-dragging", "true");
+      dndPlaceIndicator(row, false);
+    } else {
+      row.setAttribute("data-lifted", "true");
+    }
+  }
+
+  function dndClear() {
+    if (dnd.row) {
+      dnd.row.removeAttribute("data-dragging");
+      dnd.row.removeAttribute("data-lifted");
+    }
+    dndDetachIndicator();
+    dnd.active = false;
+    dnd.mode = null;
+    dnd.scope = null;
+    dnd.row = null;
+    dnd.rowId = null;
+    dnd.rowName = "";
+    dnd.list = null;
+    dnd.startNext = null;
+    dnd.startIds = null;
+    dnd.pointerId = null;
+    dnd.handle = null;
+  }
+
+  function dndCancel() {
+    if (!dnd.active) return;
+    if (dnd.mode === "keyboard" && dnd.row && dnd.list) {
+      dnd.list.insertBefore(dnd.row, dnd.startNext);
+      dndRefocusHandle();
+    }
+    dndAnnounce(dnd.rowName + " reorder cancelled");
+    dndClear();
+  }
+
+  function dndCommit() {
+    if (!dnd.active) return;
+    var ids = dnd.mode === "pointer" ? dndIdsWithIndicator() : dndIdsOf(dnd.list);
+    var scope = dnd.scope;
+    var list = dnd.list;
+    var rowId = dnd.rowId;
+    var unchanged = sameIds(ids, dnd.startIds);
+    dndAnnounce(dndPositionMessage(" dropped, position "));
+    dndClear();
+    if (unchanged) { render(); return; }
+    state.settingsFocusId = rowId;
+    if (scope === "category") {
+      handlers.onReorderCategories(ids);
+      return;
+    }
+    var owner = list && list.closest ? list.closest(".omx-app-dnd-row") : null;
+    var categoryId = owner ? owner.getAttribute("data-category-id") : null;
+    if (categoryId) handlers.onReorderOps(categoryId, ids);
+    else render();
+  }
+
+  // Moving a row re-inserts it, which drops focus off the handle inside it. Without this the
+  // second ArrowDown of a keyboard reorder would never reach the list's keydown handler.
+  function dndRefocusHandle() {
+    if (dnd.handle && dnd.handle.focus) dnd.handle.focus();
+  }
+
+  function dndKeyboardMove(delta) {
+    if (!dnd.active || dnd.mode !== "keyboard") return;
+    var rows = dndRowsOf(dnd.list);
+    var idx = rows.indexOf(dnd.row);
+    var next = idx + delta;
+    if (idx === -1 || next < 0 || next >= rows.length) return;
+    if (delta < 0) dnd.list.insertBefore(dnd.row, rows[next]);
+    else dnd.list.insertBefore(dnd.row, rows[next].nextSibling);
+    dndRefocusHandle();
+    dndAnnounce(dndPositionMessage(", position "));
+  }
+
+  function wireDragAndDrop(list) {
+    list.addEventListener("pointerdown", function (evt) {
+      if (dnd.active) return;
+      var handle = evt.target && evt.target.closest ? evt.target.closest(".omx-app-dnd-handle") : null;
+      if (!handle) return;
+      var row = handle.closest(".omx-app-dnd-row");
+      if (!row || !row.parentNode) return;
+      evt.preventDefault();
+      dndStart(row, "pointer");
+      dnd.handle = handle;
+      dnd.pointerId = evt.pointerId;
+      try { handle.setPointerCapture(evt.pointerId); } catch (e) { /* no capture, still fine */ }
+      dndAnnounce(dndPositionMessage(" lifted, position "));
+    });
+
+    list.addEventListener("pointermove", function (evt) {
+      if (!dnd.active || dnd.mode !== "pointer") return;
+      var under = document.elementFromPoint ? document.elementFromPoint(evt.clientX, evt.clientY) : null;
+      var row = under && under.closest ? under.closest(".omx-app-dnd-row") : null;
+      if (!row || row === dnd.row) return;
+      if (row.parentNode !== dnd.list) return;
+      if (row.getAttribute("data-dnd-scope") !== dnd.scope) return;
+      var box = row.getBoundingClientRect();
+      dndPlaceIndicator(row, evt.clientY > box.top + box.height / 2);
+    });
+
+    list.addEventListener("pointerup", function () {
+      if (!dnd.active || dnd.mode !== "pointer") return;
+      releasePointer();
+      dndCommit();
+    });
+
+    list.addEventListener("pointercancel", function () {
+      if (!dnd.active || dnd.mode !== "pointer") return;
+      releasePointer();
+      dndCancel();
+      render();
+    });
+
+    list.addEventListener("keydown", function (evt) {
+      var handle = evt.target && evt.target.closest ? evt.target.closest(".omx-app-dnd-handle") : null;
+      if (!handle) return;
+      var key = evt.key;
+      if (key === " " || key === "Spacebar" || key === "Enter") {
+        evt.preventDefault();
+        if (!dnd.active) {
+          var row = handle.closest(".omx-app-dnd-row");
+          if (!row || !row.parentNode) return;
+          dndStart(row, "keyboard");
+          dnd.handle = handle;
+          dndAnnounce(dndPositionMessage(" lifted, position "));
+        } else {
+          dndCommit();
+        }
+        return;
+      }
+      if (key === "ArrowUp") { evt.preventDefault(); dndKeyboardMove(-1); return; }
+      if (key === "ArrowDown") { evt.preventDefault(); dndKeyboardMove(1); return; }
+      if (key === "Escape" && dnd.active) { evt.preventDefault(); dndCancel(); render(); }
+    });
+  }
+
+  function releasePointer() {
+    if (dnd.handle && dnd.pointerId !== null && dnd.handle.releasePointerCapture) {
+      try { dnd.handle.releasePointerCapture(dnd.pointerId); } catch (e) { /* ignore */ }
+    }
+  }
+
+  // --- panel assembly -----------------------------------------------------
+
+  function buildSettings(host) {
+    var grid = el("div", { className: "omx-app-settings-grid" });
+    grid.appendChild(buildConnectionCard());
+    grid.appendChild(buildScoringCard());
+    grid.appendChild(buildTrailsCard());
+    grid.appendChild(buildCodesCard());
+    grid.appendChild(buildDisplayCard());
+    grid.appendChild(buildDataCard());
+    grid.appendChild(buildCategoriesCard());
+    host.appendChild(grid);
   }
 
   function syncStaticSettingsInputs() {
     var s = state.doc.settings || {};
     var pairs = [
-      ["omx-app-repo-owner", lsGet(KEYS.REPO_OWNER, DEFAULTS.repoOwner)],
-      ["omx-app-repo-name", lsGet(KEYS.REPO_NAME, DEFAULTS.repoName)],
-      ["omx-app-repo-path", lsGet(KEYS.REPO_PATH, DEFAULTS.repoPath)],
-      ["omx-app-repo-branch", lsGet(KEYS.REPO_BRANCH, DEFAULTS.repoBranch)],
-      ["omx-app-target", (s.scoring && s.scoring.target) !== undefined ? s.scoring.target : ""],
-      ["omx-app-timezone", s.timezone || ""],
-      ["omx-app-date-format", s.dateFormat || ""],
-      ["omx-app-last-n-days", (s.dashboard && s.dashboard.lastNDays) !== undefined ? s.dashboard.lastNDays : ""],
-      ["omx-app-grid-days", state.gridDays],
-      ["omx-app-viewmode", state.viewMode]
+      [sref.repoOwner, lsGet(KEYS.REPO_OWNER, DEFAULTS.repoOwner)],
+      [sref.repoName, lsGet(KEYS.REPO_NAME, DEFAULTS.repoName)],
+      [sref.repoPath, lsGet(KEYS.REPO_PATH, DEFAULTS.repoPath)],
+      [sref.repoBranch, lsGet(KEYS.REPO_BRANCH, DEFAULTS.repoBranch)],
+      [sref.target, (s.scoring && s.scoring.target) !== undefined ? s.scoring.target : ""],
+      [sref.timezone, s.timezone || ""],
+      [sref.dateFormat, s.dateFormat || ""],
+      [sref.lastNDays, (s.dashboard && s.dashboard.lastNDays) !== undefined ? s.dashboard.lastNDays : ""],
+      [sref.gridDays, state.gridDays],
+      [sref.viewMode, state.viewMode]
     ];
-    pairs.forEach(function (p) {
-      var node = byId(p[0]);
-      if (node && document.activeElement !== node) node.value = String(p[1]);
-    });
+    for (var i = 0; i < pairs.length; i++) {
+      var node = pairs[i][0];
+      if (node && document.activeElement !== node) node.value = String(pairs[i][1]);
+    }
   }
 
   function renderSettings() {
     if (!state.doc) return;
+    var host = byId(VIEW_CONTAINERS.settings);
+    if (!host) return;
+    if (!state.settingsBuilt) {
+      host.textContent = "";
+      buildSettings(host);
+      state.settingsBuilt = true;
+    }
     syncStaticSettingsInputs();
     renderBands();
     renderTrails();
@@ -3765,13 +5300,6 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   // -----------------------------------------------------------------------
   // Rendering
   // -----------------------------------------------------------------------
-
-  var VIEW_CONTAINERS = {
-    grid: "omx-view-grid",
-    mobile: "omx-view-mobile",
-    scoreboard: "omx-view-scoreboard",
-    settings: "omx-view-settings"
-  };
 
   function applyViewMode() {
     var root = byId("omx-app");
@@ -3790,16 +5318,15 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
 
   function render() {
     if (typeof document === "undefined") return;
+    if (dnd.active) return;
     var root = byId("omx-app");
-    if (!root || !state.doc) { paintBanner(); return; }
+    if (!root || !state.doc) { paintPill(); return; }
 
     root.setAttribute("data-view", state.view);
     applyViewMode();
 
     var derived = buildDerived();
-    var model = clone(state.doc);
-    model.mobileDate = state.mobileDate || derived.todayIso;
-    deepFreeze(model);
+    var model = deepFreeze(clone(state.doc));
 
     var name;
     for (name in VIEW_CONTAINERS) {
@@ -3828,14 +5355,17 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
           view.render(container, model, derived, handlers);
         } catch (e) {
           container.textContent = "";
-          container.appendChild(el("div", null, "This view could not be drawn: " + (e && e.message ? e.message : String(e))));
+          container.appendChild(el("div", {
+            className: "omx-app-view-error",
+            text: "This view could not be drawn: " + (e && e.message ? e.message : String(e))
+          }));
         }
         container.scrollLeft = left;
         container.scrollTop = top;
       }
     }
 
-    paintBanner();
+    paintPill();
   }
 
   // -----------------------------------------------------------------------
@@ -3852,84 +5382,11 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
       });
     }
 
-    var banner = byId("omx-sync-banner");
-    if (banner) {
-      var tokenBtn = banner.querySelector(".omx-app-sync-token-btn");
+    var pill = byId("omx-sync-banner");
+    if (pill) {
+      var tokenBtn = pill.querySelector(".omx-app-sync-token-btn");
       if (tokenBtn) tokenBtn.addEventListener("click", function () { handlers.onViewSwitch("settings"); });
-      banner.addEventListener("dblclick", function () { handlers.onSyncNow(); });
-    }
-
-    var patSave = byId("omx-app-pat-save");
-    var patInput = byId("omx-app-pat");
-    if (patSave && patInput) {
-      patSave.addEventListener("click", function () {
-        handlers.onPatSave(patInput.value);
-        patInput.value = "";
-      });
-    }
-    var patTest = byId("omx-app-pat-test");
-    if (patTest) patTest.addEventListener("click", function () { handlers.onPatTest(); });
-
-    var staticInputs = document.querySelectorAll("[data-config-path]");
-    for (var i = 0; i < staticInputs.length; i++) {
-      (function (node) {
-        node.addEventListener("change", function () {
-          var path = node.getAttribute("data-config-path");
-          var value = node.type === "checkbox" ? node.checked
-            : (node.type === "number" ? Number(node.value) : node.value);
-          handlers.onConfigChange(path, value);
-        });
-      })(staticInputs[i]);
-    }
-
-    var bandAdd = byId("omx-app-band-add");
-    if (bandAdd) {
-      bandAdd.addEventListener("click", function () {
-        var scoring = state.doc.settings.scoring || (state.doc.settings.scoring = { bands: [] });
-        if (!Array.isArray(scoring.bands)) scoring.bands = [];
-        scoring.bands.push({ id: "band" + scoring.bands.length, label: "New band", min: 0 });
-        markConfigDirty();
-        render();
-      });
-    }
-
-    var codeAdd = byId("omx-app-code-add");
-    if (codeAdd) {
-      codeAdd.addEventListener("click", function () {
-        var codes = state.doc.settings.codes || (state.doc.settings.codes = {});
-        var key = "X";
-        var alphabet = "XYZKLNPQRS";
-        for (var a = 0; a < alphabet.length; a++) {
-          if (!hasOwn(codes, alphabet.charAt(a))) { key = alphabet.charAt(a); break; }
-        }
-        codes[key] = { label: "New code", num: 1, den: 1, counterLabel: "New code count", satisfiesEngagement: true };
-        markConfigDirty();
-        render();
-      });
-    }
-
-    var catAdd = byId("omx-app-category-add");
-    if (catAdd) {
-      catAdd.addEventListener("click", function () {
-        var name = window.prompt ? window.prompt("Category name") : null;
-        if (name) handlers.onAddCategory(name, todayIso());
-      });
-    }
-
-    var exportLink = byId("omx-app-export");
-    if (exportLink) {
-      exportLink.addEventListener("click", function (evt) {
-        if (state.exportPrimed) return;
-        evt.preventDefault();
-        handlers.onExport();
-      });
-    }
-
-    var importInput = byId("omx-app-import");
-    if (importInput) {
-      importInput.addEventListener("change", function () {
-        if (importInput.files && importInput.files.length) handlers.onImport(importInput.files[0]);
-      });
+      pill.addEventListener("dblclick", function () { handlers.onSyncNow(); });
     }
   }
 
@@ -3943,6 +5400,13 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
           flush();
         } else {
           pull();
+        }
+      });
+      document.addEventListener("keydown", function (evt) {
+        if (dnd.active && dnd.mode === "pointer" && evt.key === "Escape") {
+          releasePointer();
+          dndCancel();
+          render();
         }
       });
     }
@@ -4003,7 +5467,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     flush: flush,
     pull: pull,
     render: render,
-    VERSION: "1.0.0"
+    VERSION: "2.0.0"
   };
 
   if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
