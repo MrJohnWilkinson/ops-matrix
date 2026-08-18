@@ -1,0 +1,3980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ops Matrix</title>
+<style>
+/* Ops Matrix design system. Everything scoped under .omx - no bare element selectors,
+   no !important, no @import. Per-view prefixes: .omx-grid-*, .omx-mob-*, .omx-dash-*, .omx-app-*,
+   plus the shared .omx-tone-* / .omx-band-* utilities. */
+
+.omx {
+  --omx-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --omx-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --omx-bg:#fff; --omx-surface:#f6f7f9; --omx-border:#d8dce2;
+  --omx-text:#14171a; --omx-text-dim:#5b6570; --omx-accent:#2f6fed;
+  /* band fills - INDEXED, because band ids are user data. 0 = lowest band */
+  --omx-band-0:#d64545; --omx-band-1:#d98324; --omx-band-2:#c9a227;
+  --omx-band-3:#2e9e5b; --omx-band-4:#2e9e5b; --omx-band-5:#2e9e5b;
+  /* tone grammar - what the views actually use */
+  --omx-green:#2e9e5b; --omx-amber:#d98324; --omx-red:#d64545; --omx-none:#9aa4af;
+  --omx-target-line:#2f6fed;
+  /* code cell fills, keyed by code letter */
+  --omx-code-T:#d7f0e0; --omx-code-W:#bfe6cd; --omx-code-C:#f6ddd6;
+  --omx-code-B:#e8eaed; --omx-code-blank:transparent;
+  /* sync banner states */
+  --omx-sync-synced:#2e9e5b; --omx-sync-dirty:#d98324; --omx-sync-syncing:#2f6fed;
+  --omx-sync-offline:#5b6570; --omx-sync-token:#d64545; --omx-sync-conflict:#d64545;
+
+  --omx-radius: 6px;
+  --omx-gap: 8px;
+  --omx-shadow: 0 1px 2px rgba(0,0,0,0.08);
+
+  font-family: var(--omx-font);
+  color: var(--omx-text);
+  background: var(--omx-bg);
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (prefers-color-scheme: dark) {
+  .omx {
+    --omx-bg:#14171a; --omx-surface:#1d2126;
+    --omx-border:#2c323a; --omx-text:#eceff3; --omx-text-dim:#9aa4af;
+    /* band+tone hues unchanged */
+  }
+}
+
+.omx *, .omx *::before, .omx *::after { box-sizing: inherit; }
+
+.omx :where(button, input, select, textarea) {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--omx-text);
+  background: var(--omx-bg);
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  padding: 6px 10px;
+}
+
+.omx button {
+  cursor: pointer;
+  background: var(--omx-surface);
+}
+
+.omx button:hover {
+  background: var(--omx-border);
+}
+
+.omx table {
+  border-collapse: collapse;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Shared tone / band utilities                                           */
+/* ---------------------------------------------------------------------- */
+
+.omx-tone-green { color: var(--omx-green); }
+.omx-tone-amber { color: var(--omx-amber); }
+.omx-tone-red   { color: var(--omx-red); }
+.omx-tone-none  { color: var(--omx-none); }
+
+.omx-band-0 { background: var(--omx-band-0); }
+.omx-band-1 { background: var(--omx-band-1); }
+.omx-band-2 { background: var(--omx-band-2); }
+.omx-band-3 { background: var(--omx-band-3); }
+.omx-band-4 { background: var(--omx-band-4); }
+.omx-band-5 { background: var(--omx-band-5); }
+
+/* ---------------------------------------------------------------------- */
+/* Shell: nav, sync banner, view containers                               */
+/* ---------------------------------------------------------------------- */
+
+.omx-app-nav {
+  display: flex;
+  gap: var(--omx-gap);
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--omx-border);
+  background: var(--omx-surface);
+  flex-wrap: wrap;
+}
+
+.omx-app-nav-btn {
+  font-weight: 600;
+}
+
+.omx-app-nav-btn[data-active="true"] {
+  background: var(--omx-accent);
+  color: #fff;
+  border-color: var(--omx-accent);
+}
+
+.omx-app-sync-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--omx-border);
+  color: #fff;
+  background: var(--omx-sync-offline);
+}
+
+.omx-app-sync-banner[data-state="synced"]           { background: var(--omx-sync-synced); }
+.omx-app-sync-banner[data-state="dirty"]             { background: var(--omx-sync-dirty); }
+.omx-app-sync-banner[data-state="syncing"]           { background: var(--omx-sync-syncing); }
+.omx-app-sync-banner[data-state="offline"]           { background: var(--omx-sync-offline); }
+.omx-app-sync-banner[data-state="token-needed"]      { background: var(--omx-sync-token); }
+.omx-app-sync-banner[data-state="conflict-retrying"] { background: var(--omx-sync-conflict); }
+
+.omx-app-sync-message { flex: 1 1 auto; }
+
+.omx-app-sync-dirty { font-variant-numeric: tabular-nums; opacity: 0.9; }
+
+.omx-app-sync-token-btn {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+}
+
+.omx-app-main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.omx-app-view-container {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.omx[data-view="grid"] #omx-view-grid,
+.omx[data-view="mobile"] #omx-view-mobile,
+.omx[data-view="scoreboard"] #omx-view-scoreboard,
+.omx[data-view="settings"] #omx-view-settings {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop grid is never mobile-constrained; each view is purpose-built and shares only tokens. */
+
+/* ---------------------------------------------------------------------- */
+/* Settings panel                                                         */
+/* ---------------------------------------------------------------------- */
+
+.omx-app-settings {
+  padding: 16px;
+  gap: 24px;
+  max-width: 860px;
+}
+
+.omx-app-settings-section {
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  padding: 14px 16px;
+  background: var(--omx-surface);
+}
+
+.omx-app-settings-section h2 {
+  margin: 0 0 10px 0;
+  font-size: 15px;
+}
+
+.omx-app-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+  max-width: 420px;
+}
+
+.omx-app-field span {
+  font-size: 12px;
+  color: var(--omx-text-dim);
+}
+
+.omx-app-help-text {
+  font-size: 12px;
+  color: var(--omx-text-dim);
+  max-width: 480px;
+}
+
+.omx-app-repeat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.omx-app-repeat-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 6px;
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: var(--omx-bg);
+}
+
+.omx-app-export-link {
+  display: inline-block;
+  padding: 6px 10px;
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: var(--omx-surface);
+  color: var(--omx-accent);
+  text-decoration: none;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.omx-app-import-warnings {
+  font-size: 12px;
+  color: var(--omx-amber);
+  white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Grid view (desktop, dense)                                             */
+/* ---------------------------------------------------------------------- */
+
+.omx-grid-scroll {
+  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.omx-grid-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 12px;
+  min-width: 100%;
+}
+
+.omx-grid-category-header {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  background: var(--omx-surface);
+  padding: 8px 10px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--omx-border);
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.omx-grid-category-header .omx-grid-today-score {
+  font-size: 16px;
+}
+
+.omx-grid-header-row th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--omx-surface);
+  border-bottom: 1px solid var(--omx-border);
+  padding: 4px 6px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.omx-grid-header-row th.omx-grid-op-col {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  text-align: left;
+}
+
+.omx-grid-header-row th[data-today="true"] {
+  outline: 2px solid var(--omx-target-line);
+  outline-offset: -2px;
+}
+
+.omx-grid-op-name {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--omx-bg);
+  border-right: 1px solid var(--omx-border);
+  padding: 4px 8px;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.omx-grid-op-name[data-excluded="true"] {
+  color: var(--omx-text-dim);
+  text-decoration: line-through;
+}
+
+.omx-grid-cell {
+  border: 1px solid var(--omx-border);
+  width: 28px;
+  height: 26px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--omx-mono);
+  font-weight: 700;
+}
+
+.omx-grid-cell:hover {
+  outline: 2px solid var(--omx-accent);
+  outline-offset: -2px;
+}
+
+.omx-grid-cell[data-code="T"] { background: var(--omx-code-T); }
+.omx-grid-cell[data-code="W"] { background: var(--omx-code-W); }
+.omx-grid-cell[data-code="C"] { background: var(--omx-code-C); }
+.omx-grid-cell[data-code="B"] { background: var(--omx-code-B); }
+.omx-grid-cell[data-code=""]  { background: var(--omx-code-blank); }
+
+.omx-grid-trail-list {
+  display: flex;
+  gap: 10px;
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--omx-text-dim);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Mobile view (phone, low friction)                                      */
+/* ---------------------------------------------------------------------- */
+
+.omx-mob-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--omx-border);
+  background: var(--omx-surface);
+  position: sticky;
+  top: 0;
+}
+
+.omx-mob-stepper button {
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 16px;
+}
+
+.omx-mob-date-label {
+  flex: 1 1 auto;
+  text-align: center;
+  font-weight: 700;
+}
+
+.omx-mob-progress {
+  font-size: 12px;
+  color: var(--omx-text-dim);
+  padding: 6px 14px;
+}
+
+.omx-mob-category {
+  padding: 10px 14px;
+}
+
+.omx-mob-category-name {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.omx-mob-op-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: var(--omx-bg);
+  cursor: pointer;
+  text-align: left;
+  font-size: 15px;
+}
+
+.omx-mob-op-row[data-code="T"] { background: var(--omx-code-T); }
+.omx-mob-op-row[data-code="W"] { background: var(--omx-code-W); }
+.omx-mob-op-row[data-code="C"] { background: var(--omx-code-C); }
+.omx-mob-op-row[data-code="B"] { background: var(--omx-code-B); }
+.omx-mob-op-row[data-code=""]  { background: var(--omx-bg); }
+
+.omx-mob-op-name { flex: 1 1 auto; }
+
+.omx-mob-op-code {
+  font-family: var(--omx-mono);
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scoreboard view (glanceable, one card per category)                    */
+/* ---------------------------------------------------------------------- */
+
+.omx-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  padding: 14px;
+}
+
+.omx-dash-card {
+  border: 1px solid var(--omx-border);
+  border-radius: var(--omx-radius);
+  background: var(--omx-surface);
+  padding: 14px;
+  box-shadow: var(--omx-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.omx-dash-card-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.omx-dash-trails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.omx-dash-trail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 80px;
+}
+
+.omx-dash-trail-label {
+  color: var(--omx-text-dim);
+}
+
+.omx-dash-trail-value {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.omx-dash-today {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.omx-dash-today-value {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.omx-dash-today-target {
+  font-size: 12px;
+  color: var(--omx-text-dim);
+}
+
+.omx-dash-ladder {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.omx-dash-ladder-day {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.omx-dash-unticked {
+  font-size: 12px;
+  color: var(--omx-text-dim);
+}
+
+.omx-dash-unticked-list {
+  margin: 4px 0 0 0;
+  padding-left: 16px;
+}
+
+.omx-dash-overall {
+  padding: 14px;
+  border-bottom: 1px solid var(--omx-border);
+  display: flex;
+  gap: 20px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+
+.omx-dash-overall-score {
+  font-size: 22px;
+  font-weight: 800;
+}
+</style>
+</head>
+<body>
+<div id="omx-app" class="omx" data-viewmode="auto" data-view="grid">
+
+  <nav id="omx-nav" class="omx-app-nav">
+    <button type="button" class="omx-app-nav-btn" data-view-btn="grid">Grid</button>
+    <button type="button" class="omx-app-nav-btn" data-view-btn="mobile">Mobile</button>
+    <button type="button" class="omx-app-nav-btn" data-view-btn="scoreboard">Scoreboard</button>
+    <button type="button" class="omx-app-nav-btn" data-view-btn="settings">Settings</button>
+  </nav>
+
+  <div id="omx-sync-banner" class="omx-app-sync-banner" data-state="offline">
+    <span class="omx-app-sync-message"></span>
+    <span class="omx-app-sync-dirty"></span>
+    <button type="button" class="omx-app-sync-token-btn" hidden>Go to Settings</button>
+  </div>
+
+  <main class="omx-app-main">
+    <div id="omx-view-grid" class="omx-app-view-container"></div>
+    <div id="omx-view-mobile" class="omx-app-view-container" hidden></div>
+    <div id="omx-view-scoreboard" class="omx-app-view-container" hidden></div>
+
+    <div id="omx-view-settings" class="omx-app-view-container omx-app-settings" hidden>
+
+      <section class="omx-app-settings-section" data-settings-section="connection">
+        <h2>Connection</h2>
+        <label class="omx-app-field">
+          <span>Personal access token</span>
+          <input type="password" id="omx-app-pat" autocomplete="off" spellcheck="false">
+        </label>
+        <button type="button" id="omx-app-pat-save">Save token</button>
+        <button type="button" id="omx-app-pat-test">Test</button>
+        <label class="omx-app-field">
+          <span>Repo owner</span>
+          <input type="text" id="omx-app-repo-owner" data-config-path="__local.repo.owner">
+        </label>
+        <label class="omx-app-field">
+          <span>Repo name</span>
+          <input type="text" id="omx-app-repo-name" data-config-path="__local.repo.name">
+        </label>
+        <label class="omx-app-field">
+          <span>File path</span>
+          <input type="text" id="omx-app-repo-path" data-config-path="__local.repo.path">
+        </label>
+        <label class="omx-app-field">
+          <span>Branch</span>
+          <input type="text" id="omx-app-repo-branch" data-config-path="__local.repo.branch">
+        </label>
+        <p class="omx-app-help-text">
+          Fine-grained PAT with Contents read/write on this one repo. Stored in this browser only,
+          never committed.
+        </p>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="scoring">
+        <h2>Scoring</h2>
+        <label class="omx-app-field">
+          <span>Target %</span>
+          <input type="number" min="0" max="100" id="omx-app-target"
+                 data-config-path="settings.scoring.target">
+        </label>
+        <div id="omx-app-bands" class="omx-app-repeat-list"></div>
+        <button type="button" id="omx-app-band-add">Add band</button>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="trails">
+        <h2>Trails</h2>
+        <div id="omx-app-trails" class="omx-app-repeat-list"></div>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="codes">
+        <h2>Codes</h2>
+        <div id="omx-app-codes" class="omx-app-repeat-list"></div>
+        <button type="button" id="omx-app-code-add">Add code</button>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="categories">
+        <h2>Categories and items</h2>
+        <div id="omx-app-categories" class="omx-app-repeat-list"></div>
+        <button type="button" id="omx-app-category-add">Add category</button>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="display">
+        <h2>Display</h2>
+        <label class="omx-app-field">
+          <span>Timezone (IANA)</span>
+          <input type="text" id="omx-app-timezone" data-config-path="settings.timezone">
+        </label>
+        <label class="omx-app-field">
+          <span>Date format</span>
+          <input type="text" id="omx-app-date-format" data-config-path="settings.dateFormat">
+        </label>
+        <label class="omx-app-field">
+          <span>Dashboard last N days</span>
+          <input type="number" min="1" id="omx-app-last-n-days"
+                 data-config-path="settings.dashboard.lastNDays">
+        </label>
+        <label class="omx-app-field">
+          <span>Grid days</span>
+          <input type="number" min="1" id="omx-app-grid-days" data-config-path="__local.grid.days">
+        </label>
+        <label class="omx-app-field">
+          <span>View mode</span>
+          <select id="omx-app-viewmode" data-config-path="__local.viewmode">
+            <option value="auto">Auto</option>
+            <option value="desktop">Desktop</option>
+            <option value="mobile">Mobile</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="omx-app-settings-section" data-settings-section="data">
+        <h2>Data</h2>
+        <a id="omx-app-export" download class="omx-app-export-link">Export JSON</a>
+        <label class="omx-app-field">
+          <span>Import JSON</span>
+          <input type="file" id="omx-app-import" accept="application/json,.json">
+        </label>
+        <div id="omx-app-import-warnings" class="omx-app-import-warnings"></div>
+      </section>
+
+    </div>
+  </main>
+
+</div>
+
+<script>window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };</script>
+<script>
+/*
+ * Ops Matrix calculation engine.
+ *
+ * Implements scripts/ops-matrix/spec/engine-spec.md and engine-spec.json, spec version
+ * 1.0.0_2026-08-18_1349. Pure functions over one JSON document; no derived value is ever
+ * stored, no clock is ever read, no number that affects output is a literal in this file
+ * (every one of them is reachable from settings).
+ *
+ * Loadable two ways:
+ *   node     - `var Engine = require('./engine.js');`
+ *   browser  - plain concatenation; the file declares one global `Engine`.
+ * It requires nothing at all, project file or otherwise.
+ */
+
+var Engine = (function () {
+  'use strict';
+
+  // ---------------------------------------------------------------------------
+  // Constants that are NOT scoring numbers. None of these changes any score.
+  // ---------------------------------------------------------------------------
+
+  var SPEC_VERSION = '1.0.0_2026-08-18_1349';
+  var SCHEMA_VERSION = 1;
+
+  // Q15: the workbook item-header range starts one column before the first named item,
+  // so the first item sits at offset 1. Stable and arbitrary; fixed here forever so that
+  // re-running migration is a no-op.
+  var SLOT_INDEX_BASE = 1;
+
+  var NULL_REASON = {
+    INSUFFICIENT_HISTORY: 'insufficient-history',
+    NO_SCORABLE_DAYS: 'no-scorable-days',
+    NO_ACTIVE_OPS: 'no-active-ops'
+  };
+
+  var WARN = {
+    UNKNOWN_CODE: 'unknown-code',
+    LEGACY_CODE_REWRITTEN: 'legacy-code-rewritten',
+    DUPLICATE_ENTRY: 'duplicate-entry',
+    ENTRY_BEFORE_START: 'entry-before-start',
+    ENTRY_UNKNOWN_OP: 'entry-unknown-op',
+    CATEGORY_NO_OPS: 'category-no-ops',
+    OPCOUNT_MISMATCH: 'opcount-mismatch',
+    MISSING_TIMEZONE: 'missing-timezone',
+    MISSING_START: 'missing-started-on',
+    DUPLICATE_OP_NAME: 'duplicate-op-name',
+    SLOT_UNKNOWN_OP: 'slot-unknown-op'
+  };
+
+  // The shipped settings. Data, not code: a host may replace any of it.
+  // See defaultSettingsNotes in engine-spec.json for which values are observed and which
+  // are product decisions.
+  var DEFAULT_SETTINGS = {
+    timezone: 'Australia/Sydney',
+    dateFormat: 'dd/MM/yyyy',
+    codes: {
+      'T': { label: 'Tick', num: 1, den: 1, counterLabel: 'Tick/Track Count', satisfiesEngagement: true },
+      'W': { label: 'Winning', num: 1, den: 1, counterLabel: 'Winning Count', satisfiesEngagement: true },
+      'C': { label: 'Adjust', num: 0, den: 1, counterLabel: 'Adjust Count', satisfiesEngagement: true },
+      'M': { label: 'Adjust (legacy)', num: 0, den: 1, aliasOf: 'C', counterLabel: 'Adjust Count', satisfiesEngagement: true },
+      'B': { label: 'Bye', num: 0, den: 0, counterLabel: 'NA Count', satisfiesEngagement: true },
+      '': { label: 'Miss (no entry)', num: 0, den: 1, implicit: true, satisfiesEngagement: false }
+    },
+    trails: [
+      { id: 't7', label: '7 day average', days: 7, showOnDashboard: true },
+      { id: 't28', label: '28 day average', days: 28, showOnDashboard: true },
+      { id: 't90', label: '90 day average', days: 90, showOnDashboard: false },
+      { id: 't365', label: '365 day average', days: 365, showOnDashboard: false }
+    ],
+    scoring: {
+      target: 85,
+      bands: [
+        { id: 'off', label: 'Off track', min: 0 },
+        { id: 'building', label: 'Building', min: 50 },
+        { id: 'close', label: 'Close', min: 70 },
+        { id: 'ontarget', label: 'On target', min: 85 }
+      ]
+    },
+    dashboard: { lastNDays: 7 }
+  };
+
+  // Migrated documents get the trail windows the live workbooks actually carry:
+  // 28/28/28/7 - three redundant copies of one window plus the weekly one.
+  var LIVE_TRAILS = [
+    { id: 't28a', label: '28 day average', days: 28, showOnDashboard: true },
+    { id: 't28b', label: '28 day average (2)', days: 28, showOnDashboard: false },
+    { id: 't28c', label: '28 day average (3)', days: 28, showOnDashboard: false },
+    { id: 't7', label: '7 day average', days: 7, showOnDashboard: true }
+  ];
+
+  // ---------------------------------------------------------------------------
+  // Small utilities
+  // ---------------------------------------------------------------------------
+
+  function hasOwn(o, k) { return o !== null && typeof o === 'object' && Object.prototype.hasOwnProperty.call(o, k); }
+  function isObj(o) { return o !== null && typeof o === 'object' && !Array.isArray(o); }
+  function clone(x) { return x === undefined ? undefined : JSON.parse(JSON.stringify(x)); }
+  function isNum(x) { return typeof x === 'number' && isFinite(x); }
+
+  function pad(n, width) {
+    var s = String(Math.abs(n));
+    while (s.length < width) { s = '0' + s; }
+    return (n < 0 ? '-' : '') + s;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Dates. Whole-day arithmetic only, UTC-anchored, never local time - so no daylight
+  // saving boundary can shift a date. addDays is the ONLY date helper; daysBetween is
+  // expressed in the same terms.
+  // ---------------------------------------------------------------------------
+
+  var ISO_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+  var MS_PER_DAY = 86400000;
+
+  function parseISO(iso) {
+    if (typeof iso !== 'string') { throw new Error('date must be an ISO string, got ' + typeof iso); }
+    var m = ISO_RE.exec(iso);
+    if (!m) { throw new Error('malformed ISO date: ' + iso); }
+    var y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    var t = Date.UTC(y, mo - 1, d);
+    var back = new Date(t);
+    if (back.getUTCFullYear() !== y || back.getUTCMonth() !== mo - 1 || back.getUTCDate() !== d) {
+      throw new Error('not a real calendar date: ' + iso);
+    }
+    return t;
+  }
+
+  function formatUTC(t) {
+    var d = new Date(t);
+    return pad(d.getUTCFullYear(), 4) + '-' + pad(d.getUTCMonth() + 1, 2) + '-' + pad(d.getUTCDate(), 2);
+  }
+
+  function addDays(iso, n) {
+    var k = Math.trunc(Number(n) || 0);
+    return formatUTC(parseISO(iso) + k * MS_PER_DAY);
+  }
+
+  function daysBetween(fromIso, toIso) {
+    return Math.round((parseISO(toIso) - parseISO(fromIso)) / MS_PER_DAY);
+  }
+
+  function isISO(s) {
+    if (typeof s !== 'string' || !ISO_RE.test(s)) { return false; }
+    try { parseISO(s); return true; } catch (e) { return false; }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Settings access
+  // ---------------------------------------------------------------------------
+
+  function settingsOf(doc) {
+    if (!isObj(doc) || !isObj(doc.settings)) { throw new Error('document has no settings'); }
+    return doc.settings;
+  }
+
+  function codeTable(settings) {
+    if (!isObj(settings.codes)) { throw new Error('settings.codes is missing'); }
+    if (!hasOwn(settings.codes, '')) { throw new Error('settings.codes is missing the implicit "" row'); }
+    return settings.codes;
+  }
+
+  // The whole of scoring: a code resolves to a { num, den } pair. An entry whose code is
+  // absent from the table resolves to the implicit row (a miss) - the safest of the three
+  // options, per open question 5.
+  function rowForCode(settings, c) {
+    var codes = codeTable(settings);
+    if (c === undefined || c === null || c === '') { return codes['']; }
+    if (hasOwn(codes, c)) { return codes[c]; }
+    return codes[''];
+  }
+
+  function weightNum(row) { return isNum(row.num) ? row.num : 0; }
+  function weightDen(row) { return isNum(row.den) ? row.den : 0; }
+
+  function bandsOf(settings) {
+    return (isObj(settings.scoring) && Array.isArray(settings.scoring.bands)) ? settings.scoring.bands : [];
+  }
+
+  // A score falls in the LAST band whose min is <= it. A null score has no band.
+  function band(settings, score) {
+    if (!isNum(score)) { return null; }
+    var bs = bandsOf(settings), found = null, i;
+    for (i = 0; i < bs.length; i++) {
+      if (isObj(bs[i]) && isNum(bs[i].min) && bs[i].min <= score) { found = bs[i].id; }
+    }
+    return found === undefined ? null : found;
+  }
+
+  function trailDefs(settings) { return Array.isArray(settings.trails) ? settings.trails : []; }
+
+  function findTrailDef(settings, trailId) {
+    var ts = trailDefs(settings), i;
+    for (i = 0; i < ts.length; i++) { if (ts[i] && ts[i].id === trailId) { return ts[i]; } }
+    throw new Error('unknown trail id: ' + trailId);
+  }
+
+  function ladderLength(settings) {
+    var d = settings.dashboard;
+    return (isObj(d) && isNum(d.lastNDays)) ? Math.trunc(d.lastNDays) : 0;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Document index. A read-through cache keyed on the document object; invalidated when
+  // the entries array is replaced or changes length. Invisible to callers: it changes no
+  // return value, only the cost of producing it.
+  // ---------------------------------------------------------------------------
+
+  var CACHE = (typeof WeakMap === 'function') ? new WeakMap() : null;
+
+  function buildIndex(doc) {
+    var idx = {
+      entriesRef: doc.entries,
+      entriesLen: Array.isArray(doc.entries) ? doc.entries.length : 0,
+      ops: {},          // opId -> op record
+      categories: {},   // categoryId -> category record
+      byDay: {}         // dayIso -> { opId -> code }
+    };
+    var i, e, day;
+    if (Array.isArray(doc.ops)) {
+      for (i = 0; i < doc.ops.length; i++) { if (isObj(doc.ops[i]) && doc.ops[i].id) { idx.ops[doc.ops[i].id] = doc.ops[i]; } }
+    }
+    if (Array.isArray(doc.categories)) {
+      for (i = 0; i < doc.categories.length; i++) {
+        if (isObj(doc.categories[i]) && doc.categories[i].id) { idx.categories[doc.categories[i].id] = doc.categories[i]; }
+      }
+    }
+    if (Array.isArray(doc.entries)) {
+      for (i = 0; i < doc.entries.length; i++) {
+        e = doc.entries[i];
+        if (!isObj(e) || typeof e.d !== 'string' || typeof e.op !== 'string') { continue; }
+        day = idx.byDay[e.d];
+        if (!day) { day = idx.byDay[e.d] = {}; }
+        day[e.op] = e.c;   // last write wins; migrate() dedupes and warns
+      }
+    }
+    return idx;
+  }
+
+  function indexOf(doc) {
+    if (!isObj(doc)) { throw new Error('document must be an object'); }
+    if (!CACHE) { return buildIndex(doc); }
+    var idx = CACHE.get(doc);
+    var len = Array.isArray(doc.entries) ? doc.entries.length : 0;
+    if (idx && idx.entriesRef === doc.entries && idx.entriesLen === len) { return idx; }
+    idx = buildIndex(doc);
+    CACHE.set(doc, idx);
+    return idx;
+  }
+
+  function categoryOf(doc, categoryId) {
+    var c = indexOf(doc).categories[categoryId];
+    if (!c) { throw new Error('unknown category: ' + categoryId); }
+    return c;
+  }
+
+  // Active ops = the category's slots, in slot order, minus excluded ops. A slot pointing
+  // at a missing op record is skipped (migrate reports it).
+  function activeOps(doc, category) {
+    var idx = indexOf(doc), out = [], i, op;
+    var slots = Array.isArray(category.slots) ? category.slots : [];
+    for (i = 0; i < slots.length; i++) {
+      op = idx.ops[slots[i]];
+      if (op && op.excluded !== true) { out.push(op); }
+    }
+    return out;
+  }
+
+  function codeAt(doc, dayIso, opId) {
+    var day = indexOf(doc).byDay[dayIso];
+    if (!day || !hasOwn(day, opId)) { return undefined; }
+    return day[opId];
+  }
+
+  // ---------------------------------------------------------------------------
+  // API
+  // ---------------------------------------------------------------------------
+
+  // Number of active ops in a category. One number, applied unchanged to every day.
+  function opCount(doc, categoryId) {
+    return activeOps(doc, categoryOf(doc, categoryId)).length;
+  }
+
+  // Day score, or null. Null means not computable; 0 means computed and zero.
+  function dayScore(doc, categoryId, dayIso) {
+    var settings = settingsOf(doc);
+    var cat = categoryOf(doc, categoryId);
+    var ops = activeOps(doc, cat);
+    if (ops.length === 0) { return null; }
+    if (!isISO(dayIso)) { throw new Error('malformed day: ' + dayIso); }
+    var num = 0, den = 0, i, row;
+    for (i = 0; i < ops.length; i++) {
+      row = rowForCode(settings, codeAt(doc, dayIso, ops[i].id));
+      num += weightNum(row);
+      den += weightDen(row);
+    }
+    if (den === 0) { return null; }   // the all-byes day; NOT zero
+    return num / den * 100;
+  }
+
+  // Trail average over [today-days, today-1]. The window excludes today.
+  function trail(doc, categoryId, trailId, todayIso) {
+    var settings = settingsOf(doc);
+    var cat = categoryOf(doc, categoryId);
+    var def = findTrailDef(settings, trailId);
+    var days = Math.trunc(def.days);
+    if (!(days >= 1)) { throw new Error('trail ' + trailId + ' has a non-positive window'); }
+    if (!isISO(todayIso)) { throw new Error('malformed today: ' + todayIso); }
+
+    var out = {
+      trailId: trailId,
+      days: days,
+      windowStart: addDays(todayIso, -days),
+      windowEnd: addDays(todayIso, -1),
+      score: null,
+      band: null,
+      scoredDays: 0,
+      nullReason: null
+    };
+
+    if (activeOps(doc, cat).length === 0) {
+      out.nullReason = NULL_REASON.NO_ACTIVE_OPS;
+      return out;
+    }
+
+    // Gate: a partial window never yields a partial average.
+    if (isISO(cat.startedOn) && daysBetween(cat.startedOn, todayIso) < days) {
+      out.nullReason = NULL_REASON.INSUFFICIENT_HISTORY;
+      return out;
+    }
+
+    var sum = 0, n = 0, i, s, d = out.windowStart;
+    for (i = 0; i < days; i++) {
+      s = dayScore(doc, categoryId, d);
+      if (isNum(s)) { sum += s; n += 1; }   // nulls (all-bye days) are discarded
+      d = addDays(d, 1);
+    }
+    out.scoredDays = n;
+    if (n === 0) {
+      out.nullReason = NULL_REASON.NO_SCORABLE_DAYS;
+      return out;
+    }
+    // Mean of daily percentages, NOT a pooled ratio of summed numerators over denominators.
+    out.score = sum / n;
+    out.band = band(settings, out.score);
+    return out;
+  }
+
+  // The day ladder: yesterday backwards, newest first, never today.
+  function lastNDays(doc, categoryId, todayIso, n) {
+    var settings = settingsOf(doc);
+    categoryOf(doc, categoryId);
+    if (!isISO(todayIso)) { throw new Error('malformed today: ' + todayIso); }
+    var count = isNum(n) ? Math.trunc(n) : ladderLength(settings);
+    var out = [], i, d, s;
+    for (i = 1; i <= count; i++) {
+      d = addDays(todayIso, -i);
+      s = dayScore(doc, categoryId, d);
+      out.push({ d: d, score: s, band: band(settings, s) });
+    }
+    return out;
+  }
+
+  // Active ops with NO entry at all for the day, in slot order. A bye is an entry, so a
+  // bye op is not unticked; an adjust is an entry too.
+  function unticked(doc, categoryId, dayIso) {
+    var ops = activeOps(doc, categoryOf(doc, categoryId));
+    if (!isISO(dayIso)) { throw new Error('malformed day: ' + dayIso); }
+    var out = [], i;
+    for (i = 0; i < ops.length; i++) {
+      if (codeAt(doc, dayIso, ops[i].id) === undefined) { out.push(ops[i].id); }
+    }
+    return out;
+  }
+
+  // One category's complete dashboard block. Pure composition; adds no arithmetic.
+  function categorySummary(doc, categoryId, todayIso) {
+    var settings = settingsOf(doc);
+    var cat = categoryOf(doc, categoryId);
+    var idx = indexOf(doc);
+    var todayScore = dayScore(doc, categoryId, todayIso);
+    var defs = trailDefs(settings), i;
+    var trails = [];
+    for (i = 0; i < defs.length; i++) {
+      if (defs[i] && defs[i].id) { trails.push(trail(doc, categoryId, defs[i].id, todayIso)); }
+    }
+    var unt = unticked(doc, categoryId, todayIso), untOut = [], op;
+    for (i = 0; i < unt.length; i++) {
+      op = idx.ops[unt[i]];
+      untOut.push({ id: unt[i], name: op ? op.name : unt[i] });
+    }
+    return {
+      id: cat.id,
+      name: cat.name,
+      opCount: opCount(doc, categoryId),
+      today: { d: todayIso, score: todayScore, band: band(settings, todayScore) },
+      trails: trails,
+      lastNDays: lastNDays(doc, categoryId, todayIso),
+      unticked: untOut
+    };
+  }
+
+  // Every category plus the owner block.
+  function dashboard(doc, todayIso) {
+    var settings = settingsOf(doc);
+    var cats = Array.isArray(doc.categories) ? doc.categories : [];
+    var ordered = cats.map(function (c, i) { return { c: c, i: i }; });
+    ordered.sort(function (a, b) {
+      var ao = isNum(a.c.order) ? a.c.order : Infinity;
+      var bo = isNum(b.c.order) ? b.c.order : Infinity;
+      if (ao !== bo) { return ao - bo; }
+      return a.i - b.i;    // stable: document order
+    });
+    var owner = isObj(doc.owner) ? doc.owner : {};
+    return {
+      todayIso: todayIso,
+      owner: { userKey: owner.userKey === undefined ? null : owner.userKey, displayName: owner.displayName === undefined ? null : owner.displayName },
+      target: (isObj(settings.scoring) && isNum(settings.scoring.target)) ? settings.scoring.target : null,
+      categories: ordered.map(function (x) { return categorySummary(doc, x.c.id, todayIso); })
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Migration
+  //
+  // Accepts either a v1 document (normalised in place, idempotently) or an import shape
+  // whose categories carry `items` (ordered op rows) and `grid` (dated rows of
+  // name -> letter). Never drops data: anything it cannot place becomes a warning.
+  // ---------------------------------------------------------------------------
+
+  function slugify(s, fallback) {
+    var out = String(s === undefined || s === null ? '' : s).toLowerCase()
+      .replace(/[^a-z0-9.:-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^[^a-z0-9]+/, '')
+      .replace(/[^a-z0-9]+$/, '');
+    return out.length ? out.slice(0, 128) : (fallback || 'x');
+  }
+
+  function warnFn(list) {
+    return function (code, message, context) {
+      list.push({ code: code, message: message, context: context === undefined ? null : context });
+    };
+  }
+
+  function mergeSettings(provided, baseTrails) {
+    var s = clone(DEFAULT_SETTINGS);
+    s.trails = clone(baseTrails);
+    if (!isObj(provided)) { return s; }
+    var k;
+    for (k in provided) {
+      if (!hasOwn(provided, k)) { continue; }
+      if (provided[k] === undefined) { continue; }
+      if (k === 'codes' && isObj(provided.codes)) {
+        var c;
+        for (c in provided.codes) { if (hasOwn(provided.codes, c)) { s.codes[c] = clone(provided.codes[c]); } }
+      } else {
+        s[k] = clone(provided[k]);
+      }
+    }
+    if (!hasOwn(s.codes, '')) { s.codes[''] = clone(DEFAULT_SETTINGS.codes['']); }
+    return s;
+  }
+
+  // Resolve one raw letter against the code table. Returns { c, alias, unknown }.
+  function resolveCode(settings, raw) {
+    var c = (raw === undefined || raw === null) ? '' : String(raw).trim();
+    if (c === '') { return { c: null, alias: false, unknown: false }; }   // nothing recorded
+    var codes = settings.codes;
+    if (!hasOwn(codes, c) && hasOwn(codes, c.toUpperCase())) { c = c.toUpperCase(); }
+    if (!hasOwn(codes, c)) { return { c: c, alias: false, unknown: true }; }
+    var row = codes[c];
+    if (isObj(row) && typeof row.aliasOf === 'string' && hasOwn(codes, row.aliasOf)) {
+      return { c: row.aliasOf, alias: true, from: c, unknown: false };
+    }
+    return { c: c, alias: false, unknown: false };
+  }
+
+  function sortEntries(entries) {
+    entries.sort(function (a, b) {
+      if (a.d < b.d) { return -1; }
+      if (a.d > b.d) { return 1; }
+      if (a.op < b.op) { return -1; }
+      if (a.op > b.op) { return 1; }
+      return 0;
+    });
+    return entries;
+  }
+
+  function looksLikeDocument(input) {
+    return isObj(input) && (input.schemaVersion !== undefined || Array.isArray(input.ops) || Array.isArray(input.entries));
+  }
+
+  function migrateDocument(input, warn) {
+    var doc = clone(input);
+    doc.schemaVersion = SCHEMA_VERSION;
+    if (!isObj(doc.owner)) { doc.owner = { userKey: 'owner' }; }
+    if (!isObj(doc.settings) || doc.settings.timezone === undefined) {
+      warn(WARN.MISSING_TIMEZONE, 'no timezone in the input; defaulted to ' + DEFAULT_SETTINGS.timezone, null);
+    }
+    doc.settings = mergeSettings(doc.settings, isObj(doc.settings) && Array.isArray(doc.settings.trails) ? doc.settings.trails : LIVE_TRAILS);
+    if (!Array.isArray(doc.categories)) { doc.categories = []; }
+    if (!Array.isArray(doc.ops)) { doc.ops = []; }
+    if (!Array.isArray(doc.entries)) { doc.entries = []; }
+
+    var opsById = {}, i, j, op, cat;
+    for (i = 0; i < doc.ops.length; i++) {
+      op = doc.ops[i];
+      if (!isObj(op) || !op.id) { continue; }
+      if (op.excluded !== true) { op.excluded = false; }
+      opsById[op.id] = op;
+    }
+    for (i = 0; i < doc.categories.length; i++) {
+      cat = doc.categories[i];
+      if (!isObj(cat)) { continue; }
+      if (!Array.isArray(cat.slots)) { cat.slots = []; }
+      if (cat.slots.length === 0) { warn(WARN.CATEGORY_NO_OPS, 'category has no ops', { category: cat.id }); }
+      for (j = 0; j < cat.slots.length; j++) {
+        if (!opsById[cat.slots[j]]) {
+          warn(WARN.SLOT_UNKNOWN_OP, 'slot references an op that does not exist', { category: cat.id, op: cat.slots[j] });
+        }
+      }
+      if (!isISO(cat.startedOn)) {
+        warn(WARN.MISSING_START, 'category has no usable startedOn; the insufficient-history gate cannot fire', { category: cat.id });
+      }
+    }
+
+    // Rewrite aliases, drop nothing, dedupe on (d, op) with the later value winning.
+    var seen = {}, kept = [], key, e, r;
+    for (i = 0; i < doc.entries.length; i++) {
+      e = doc.entries[i];
+      if (!isObj(e)) { continue; }
+      r = resolveCode(doc.settings, e.c);
+      if (r.c === null) { continue; }
+      if (r.unknown) { warn(WARN.UNKNOWN_CODE, 'code is not in settings.codes; scored as a miss', { d: e.d, op: e.op, code: r.c }); }
+      if (r.alias) { warn(WARN.LEGACY_CODE_REWRITTEN, 'legacy code rewritten', { d: e.d, op: e.op, from: r.from, to: r.c }); }
+      e.c = r.c;
+      if (!opsById[e.op]) { warn(WARN.ENTRY_UNKNOWN_OP, 'entry references an unknown op', { d: e.d, op: e.op }); }
+      key = e.d + '|' + e.op;
+      if (hasOwn(seen, key)) {
+        warn(WARN.DUPLICATE_ENTRY, 'duplicate entry for the same day and op; the later value wins', { d: e.d, op: e.op });
+        kept[seen[key]] = e;
+      } else {
+        seen[key] = kept.length;
+        kept.push(e);
+      }
+    }
+    // Entries before their category's start.
+    var startFor = {};
+    for (i = 0; i < doc.categories.length; i++) {
+      cat = doc.categories[i];
+      if (!isObj(cat) || !Array.isArray(cat.slots)) { continue; }
+      for (j = 0; j < cat.slots.length; j++) { startFor[cat.slots[j]] = cat.startedOn; }
+    }
+    for (i = 0; i < kept.length; i++) {
+      e = kept[i];
+      if (isISO(startFor[e.op]) && isISO(e.d) && e.d < startFor[e.op]) {
+        warn(WARN.ENTRY_BEFORE_START, 'entry predates its category start', { d: e.d, op: e.op, startedOn: startFor[e.op] });
+      }
+    }
+    doc.entries = sortEntries(kept);
+    return doc;
+  }
+
+  function migrateImport(input, warn) {
+    var srcCats = Array.isArray(input.categories) ? input.categories
+      : (Array.isArray(input.workbooks) ? input.workbooks : []);
+    if (input.settings === undefined || !isObj(input.settings) || input.settings.timezone === undefined) {
+      warn(WARN.MISSING_TIMEZONE, 'the source carries no timezone; defaulted to ' + DEFAULT_SETTINGS.timezone, null);
+    }
+    var settings = mergeSettings(input.settings, LIVE_TRAILS);
+    var owner = isObj(input.owner) ? clone(input.owner) : { userKey: 'owner' };
+    if (!owner.userKey) { owner.userKey = 'owner'; }
+
+    var doc = { schemaVersion: SCHEMA_VERSION, owner: owner, settings: settings, categories: [], ops: [], entries: [] };
+    var usedCatIds = {};
+    var ci, ii, gi, src, catId, items, item, opId, byName, cat, grid, row, name, raw, r, entries, key, seen, dates, e;
+
+    for (ci = 0; ci < srcCats.length; ci++) {
+      src = srcCats[ci];
+      if (!isObj(src)) { continue; }
+      catId = slugify(src.id !== undefined ? src.id : (src.slug !== undefined ? src.slug : src.name), 'category-' + (ci + 1));
+      while (hasOwn(usedCatIds, catId)) { catId = catId + '-' + (ci + 1); }
+      usedCatIds[catId] = true;
+
+      items = Array.isArray(src.items) ? src.items : [];
+      byName = {};
+      cat = { id: catId, name: String(src.name === undefined ? catId : src.name), startedOn: null, slots: [] };
+      if (isNum(src.order)) { cat.order = Math.trunc(src.order); }
+
+      for (ii = 0; ii < items.length; ii++) {
+        item = items[ii];
+        if (!isObj(item)) { continue; }
+        // Deterministic id: category id joined to the slot index, where the slot index is
+        // the item's offset within the workbook's item-header range (Q15: base 1).
+        opId = catId + ':' + (ii + SLOT_INDEX_BASE);
+        var opRec = { id: opId, name: String(item.name === undefined ? opId : item.name), excluded: item.excluded === true };
+        if (typeof item.target === 'string' && item.target.length) { opRec.target = item.target; }
+        doc.ops.push(opRec);
+        cat.slots.push(opId);
+        name = String(item.name);
+        if (hasOwn(byName, name)) {
+          warn(WARN.DUPLICATE_OP_NAME, 'two items share a name; grid cells map to the first', { category: catId, name: name });
+        } else {
+          byName[name] = opId;
+        }
+        // Per-op tracking code from the item header. It is not part of the op record - the
+        // code table is the single home for code semantics - but an unrecognised letter is
+        // still reported so nothing passes silently.
+        if (item.code !== undefined && item.code !== null && String(item.code).trim() !== '') {
+          r = resolveCode(settings, item.code);
+          if (r.unknown) {
+            warn(WARN.UNKNOWN_CODE, 'per-op tracking code is not in settings.codes', { category: catId, op: opId, code: r.c });
+          }
+        }
+      }
+      if (cat.slots.length === 0) { warn(WARN.CATEGORY_NO_OPS, 'category has no ops', { category: catId }); }
+
+      grid = Array.isArray(src.grid) ? src.grid : [];
+      dates = [];
+      seen = {};
+      entries = [];
+      for (gi = 0; gi < grid.length; gi++) {
+        row = grid[gi];
+        if (!isObj(row) || !isISO(row.d)) { continue; }
+        dates.push(row.d);
+        var ticks = isObj(row.ticks) ? row.ticks : {};
+        for (name in ticks) {
+          if (!hasOwn(ticks, name)) { continue; }
+          raw = ticks[name];
+          r = resolveCode(settings, raw);
+          if (r.c === null) { continue; }   // blank cell: no entry row at all
+          opId = byName[name];
+          if (!opId) {
+            warn(WARN.ENTRY_UNKNOWN_OP, 'grid cell names an item that is not an op', { category: catId, d: row.d, name: name });
+            continue;
+          }
+          if (r.unknown) { warn(WARN.UNKNOWN_CODE, 'grid code is not in settings.codes; scored as a miss', { category: catId, d: row.d, op: opId, code: r.c }); }
+          if (r.alias) { warn(WARN.LEGACY_CODE_REWRITTEN, 'legacy code rewritten', { category: catId, d: row.d, op: opId, from: r.from, to: r.c }); }
+          key = row.d + '|' + opId;
+          e = { d: row.d, op: opId, c: r.c };
+          if (hasOwn(seen, key)) {
+            warn(WARN.DUPLICATE_ENTRY, 'duplicate entry for the same day and op; the later value wins', { category: catId, d: row.d, op: opId });
+            entries[seen[key]] = e;
+          } else {
+            seen[key] = entries.length;
+            entries.push(e);
+          }
+        }
+      }
+
+      // startedOn comes from the workbook's date axis start. The grid carries a row for
+      // every axis day, so the earliest grid date is that axis start. An explicit value
+      // always wins over the derivation.
+      if (isISO(src.startedOn)) {
+        cat.startedOn = src.startedOn;
+      } else if (dates.length) {
+        dates.sort();
+        cat.startedOn = dates[0];
+      } else {
+        cat.startedOn = null;
+        warn(WARN.MISSING_START, 'category has no startedOn and no dated rows to derive one from', { category: catId });
+      }
+
+      for (ii = 0; ii < entries.length; ii++) {
+        if (isISO(cat.startedOn) && entries[ii].d < cat.startedOn) {
+          warn(WARN.ENTRY_BEFORE_START, 'entry predates its category start', { category: catId, d: entries[ii].d, op: entries[ii].op, startedOn: cat.startedOn });
+        }
+        doc.entries.push(entries[ii]);
+      }
+
+      // opCount is never migrated; it is recomputed. If the source carries the workbook's
+      // cached count, the recomputed value must match it.
+      var expectedCount = isNum(src.cachedOpCount) ? src.cachedOpCount : (isNum(src.opCount) ? src.opCount : null);
+      var actualCount = 0;
+      for (ii = 0; ii < cat.slots.length; ii++) {
+        var o = doc.ops[doc.ops.length - cat.slots.length + ii];
+        if (o && o.excluded !== true) { actualCount += 1; }
+      }
+      if (expectedCount !== null && expectedCount !== actualCount) {
+        warn(WARN.OPCOUNT_MISMATCH, 'recomputed op count does not match the cached op count', { category: catId, cached: expectedCount, recomputed: actualCount });
+      }
+
+      doc.categories.push(cat);
+    }
+
+    sortEntries(doc.entries);
+    return doc;
+  }
+
+  function migrate(input, options) {
+    var warnings = [];
+    var warn = warnFn(warnings);
+    if (!isObj(input)) { throw new Error('migrate expects an object'); }
+    var toVersion = (isObj(options) && options.toVersion !== undefined) ? options.toVersion : SCHEMA_VERSION;
+    if (toVersion !== SCHEMA_VERSION) { throw new Error('unsupported target schema version: ' + toVersion); }
+    var doc = looksLikeDocument(input) ? migrateDocument(input, warn) : migrateImport(input, warn);
+    return { doc: doc, warnings: warnings };
+  }
+
+  // ---------------------------------------------------------------------------
+
+  return {
+    SPEC_VERSION: SPEC_VERSION,
+    SCHEMA_VERSION: SCHEMA_VERSION,
+    NULL_REASON: NULL_REASON,
+    WARNING_CODES: WARN,
+    defaultSettings: function () { return clone(DEFAULT_SETTINGS); },
+    liveTrails: function () { return clone(LIVE_TRAILS); },
+
+    addDays: addDays,
+    daysBetween: daysBetween,
+    band: band,
+
+    opCount: opCount,
+    dayScore: dayScore,
+    trail: trail,
+    lastNDays: lastNDays,
+    unticked: unticked,
+    categorySummary: categorySummary,
+    dashboard: dashboard,
+    migrate: migrate
+  };
+})();
+
+if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+  module.exports = Engine;
+}
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
+
+(function () {
+  "use strict";
+
+  var ERR = {
+    NO_TOKEN: "NO_TOKEN",
+    BAD_TOKEN: "BAD_TOKEN",
+    NOT_FOUND: "NOT_FOUND",
+    CONFLICT: "CONFLICT",
+    RATE_LIMIT: "RATE_LIMIT",
+    NETWORK: "NETWORK",
+    PARSE: "PARSE",
+    QUOTA: "QUOTA",
+    UNSUPPORTED: "UNSUPPORTED"
+  };
+
+  var RETRYABLE = { NETWORK: true, RATE_LIMIT: true, CONFLICT: true };
+
+  var KEYS = {
+    PAT: "omx.pat",
+    REPO_OWNER: "omx.repo.owner",
+    REPO_NAME: "omx.repo.name",
+    REPO_PATH: "omx.repo.path",
+    REPO_BRANCH: "omx.repo.branch",
+    DOC: "omx.doc",
+    DOC_SHA: "omx.doc.sha",
+    QUEUE: "omx.queue",
+    VIEW: "omx.view",
+    VIEWMODE: "omx.viewmode",
+    GRID_DAYS: "omx.grid.days"
+  };
+
+  function omxError(code, message, retryable, status, cause) {
+    var e = new Error(message);
+    e.name = "OmxError";
+    e.code = code;
+    e.message = message;
+    e.retryable = retryable !== undefined ? retryable : !!RETRYABLE[code];
+    if (status !== undefined) e.status = status;
+    if (cause !== undefined) e.cause = cause;
+    return e;
+  }
+
+  function nowIso() {
+    return new Date().toISOString();
+  }
+
+  function safeParse(str) {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      return undefined;
+    }
+  }
+
+  function b64EncodeUtf8(str) {
+    // UTF-8 safe base64 encode
+    var bytes = unescape(encodeURIComponent(str));
+    return btoa(bytes);
+  }
+
+  function b64DecodeUtf8(b64) {
+    var stripped = b64.replace(/\n/g, "");
+    var bytes = atob(stripped);
+    return decodeURIComponent(escape(bytes));
+  }
+
+  function mergeChangesIntoDoc(doc, changes) {
+    // union-merge entries keyed on (d, op). local (changes) wins on conflict.
+    var map = {};
+    var i;
+    var entries = (doc && doc.entries) || [];
+    for (i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      map[e.d + "|" + e.op] = e;
+    }
+    for (i = 0; i < changes.length; i++) {
+      var c = changes[i];
+      var key = c.d + "|" + c.op;
+      if (c.c === null) {
+        delete map[key];
+      } else {
+        map[key] = { d: c.d, op: c.op, c: c.c };
+      }
+    }
+    var out = [];
+    for (var k in map) {
+      if (Object.prototype.hasOwnProperty.call(map, k)) out.push(map[k]);
+    }
+    doc.entries = out;
+    return doc;
+  }
+
+  function dedupeChanges(changes) {
+    // last write wins per (d, op), original order preserved
+    var order = [], byKey = {}, i, key;
+    for (i = 0; i < changes.length; i++) {
+      key = changes[i].d + "|" + changes[i].op;
+      if (!Object.prototype.hasOwnProperty.call(byKey, key)) order.push(key);
+      byKey[key] = changes[i];
+    }
+    var out = [];
+    for (i = 0; i < order.length; i++) out.push(byKey[order[i]]);
+    return out;
+  }
+
+  function applyChangesLocal(doc, changes) {
+    // apply an array of {d, op, c} to doc.entries in place, c:null deletes
+    var entries = (doc.entries || []).slice();
+    for (var i = 0; i < changes.length; i++) {
+      var ch = changes[i];
+      var idx = -1;
+      for (var j = 0; j < entries.length; j++) {
+        if (entries[j].d === ch.d && entries[j].op === ch.op) {
+          idx = j;
+          break;
+        }
+      }
+      if (ch.c === null) {
+        if (idx !== -1) entries.splice(idx, 1);
+      } else if (idx !== -1) {
+        entries[idx] = { d: ch.d, op: ch.op, c: ch.c };
+      } else {
+        entries.push({ d: ch.d, op: ch.op, c: ch.c });
+      }
+    }
+    doc.entries = entries;
+    return doc;
+  }
+
+  // ---------------------------------------------------------------------
+  // GitHubAdapter
+  // ---------------------------------------------------------------------
+
+  function GitHubAdapter() {
+    this._owner = null;
+    this._name = null;
+    this._path = null;
+    this._branch = "";
+    this._pat = null;
+    this._doc = null;
+    this._sha = null;
+    this._queue = [];
+    this._listeners = [];
+  }
+
+  GitHubAdapter.prototype._loadLocalConfig = function () {
+    this._owner = localStorage.getItem(KEYS.REPO_OWNER) || "MrJohnWilkinson";
+    this._name = localStorage.getItem(KEYS.REPO_NAME) || "ops-matrix-data";
+    this._path = localStorage.getItem(KEYS.REPO_PATH) || "data.json";
+    this._branch = localStorage.getItem(KEYS.REPO_BRANCH) || "";
+    this._pat = localStorage.getItem(KEYS.PAT) || null;
+  };
+
+  GitHubAdapter.prototype._loadCachedDoc = function () {
+    var docStr = localStorage.getItem(KEYS.DOC);
+    var sha = localStorage.getItem(KEYS.DOC_SHA);
+    var queueStr = localStorage.getItem(KEYS.QUEUE);
+    this._doc = docStr ? safeParse(docStr) || null : null;
+    this._sha = sha || null;
+    this._queue = queueStr ? safeParse(queueStr) || [] : [];
+  };
+
+  GitHubAdapter.prototype._persistLocalCache = function () {
+    try {
+      if (this._doc) localStorage.setItem(KEYS.DOC, JSON.stringify(this._doc));
+      if (this._sha !== null && this._sha !== undefined) {
+        localStorage.setItem(KEYS.DOC_SHA, this._sha);
+      } else {
+        localStorage.removeItem(KEYS.DOC_SHA);
+      }
+      localStorage.setItem(KEYS.QUEUE, JSON.stringify(this._queue));
+    } catch (e) {
+      // best-effort cache; ignore quota errors here (writes surface QUOTA separately)
+    }
+  };
+
+  GitHubAdapter.prototype._url = function () {
+    var u =
+      "https://api.github.com/repos/" +
+      this._owner +
+      "/" +
+      this._name +
+      "/contents/" +
+      this._path;
+    if (this._branch) u += "?ref=" + encodeURIComponent(this._branch);
+    return u;
+  };
+
+  GitHubAdapter.prototype._headers = function () {
+    return {
+      Authorization: "Bearer " + this._pat,
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+  };
+
+  GitHubAdapter.prototype._notify = function (doc, meta) {
+    for (var i = 0; i < this._listeners.length; i++) {
+      try {
+        this._listeners[i]({ doc: doc, meta: meta });
+      } catch (e) {
+        // listener errors do not break the adapter
+      }
+    }
+  };
+
+  GitHubAdapter.prototype._meta = function (source, dirty) {
+    return {
+      sha: this._sha,
+      source: source,
+      fetchedAt: nowIso(),
+      dirty: dirty !== undefined ? dirty : this._queue.length
+    };
+  };
+
+  GitHubAdapter.prototype._fetchRemote = function () {
+    var self = this;
+    return fetch(self._url(), {
+      method: "GET",
+      cache: "no-store",
+      headers: self._headers()
+    })
+      .then(function (resp) {
+        if (resp.status === 404) {
+          return { doc: null, sha: null };
+        }
+        if (resp.status === 401 || resp.status === 403) {
+          if (resp.status === 403 && self._isRateLimit(resp)) {
+            throw omxError(ERR.RATE_LIMIT, "GitHub rate limit exceeded", true, resp.status);
+          }
+          throw omxError(ERR.BAD_TOKEN, "GitHub auth rejected", false, resp.status);
+        }
+        if (!resp.ok) {
+          throw omxError(
+            ERR.NETWORK,
+            "GitHub GET failed with status " + resp.status,
+            true,
+            resp.status
+          );
+        }
+        return resp.json().then(
+          function (body) {
+            var json;
+            try {
+              json = JSON.parse(b64DecodeUtf8(body.content));
+            } catch (e) {
+              throw omxError(ERR.PARSE, "Could not parse document JSON", false, undefined, e);
+            }
+            return { doc: json, sha: body.sha };
+          },
+          function (e) {
+            throw omxError(ERR.PARSE, "GitHub response body was not valid JSON", false, undefined, e);
+          }
+        );
+      })
+      .catch(function (e) {
+        if (e && e.name === "OmxError") throw e;
+        throw omxError(ERR.NETWORK, "Network error contacting GitHub", true, undefined, e);
+      });
+  };
+
+  GitHubAdapter.prototype._isRateLimit = function (resp) {
+    var remaining = resp.headers && resp.headers.get && resp.headers.get("x-ratelimit-remaining");
+    return remaining === "0";
+  };
+
+  GitHubAdapter.prototype._putRemote = function (doc, message) {
+    var self = this;
+    var body = {
+      message: message,
+      content: b64EncodeUtf8(JSON.stringify(doc))
+    };
+    if (self._sha) body.sha = self._sha;
+    var putOpts = {
+      method: "PUT",
+      headers: Object.assign({ "Content-Type": "application/json" }, self._headers()),
+      body: JSON.stringify(body)
+    };
+    if (self._branch) {
+      var b = JSON.parse(putOpts.body);
+      b.branch = self._branch;
+      putOpts.body = JSON.stringify(b);
+    }
+    return fetch(self._url().split("?")[0], putOpts).then(function (resp) {
+      if (resp.status === 401 || resp.status === 403) {
+        if (resp.status === 403 && self._isRateLimit(resp)) {
+          throw omxError(ERR.RATE_LIMIT, "GitHub rate limit exceeded", true, resp.status);
+        }
+        throw omxError(ERR.BAD_TOKEN, "GitHub auth rejected", false, resp.status);
+      }
+      if (resp.status === 409 || resp.status === 422) {
+        var err = omxError(ERR.CONFLICT, "GitHub PUT conflict", true, resp.status);
+        err._isConflict = true;
+        throw err;
+      }
+      if (!resp.ok) {
+        throw omxError(ERR.NETWORK, "GitHub PUT failed with status " + resp.status, true, resp.status);
+      }
+      return resp.json().then(
+        function (respBody) {
+          var sha = respBody && respBody.content ? respBody.content.sha : null;
+          return sha;
+        },
+        function () {
+          return null;
+        }
+      );
+    });
+  };
+
+  GitHubAdapter.prototype.init = function (opts) {
+    var self = this;
+    self._loadLocalConfig();
+    if (opts) {
+      if (opts.owner) self._owner = opts.owner;
+      if (opts.name) self._name = opts.name;
+      if (opts.path) self._path = opts.path;
+      if (opts.branch !== undefined) self._branch = opts.branch;
+      if (opts.pat) self._pat = opts.pat;
+    }
+    self._loadCachedDoc();
+    if (!self._pat) {
+      return Promise.resolve({ ok: false, capabilities: self.capabilities(), reason: "NO_TOKEN" });
+    }
+    return Promise.resolve({ ok: true, capabilities: self.capabilities() });
+  };
+
+  GitHubAdapter.prototype.readAll = function () {
+    var self = this;
+    if (!self._pat) {
+      return Promise.resolve({
+        doc: self._doc || null,
+        meta: self._meta("local")
+      });
+    }
+    return self
+      ._fetchRemote()
+      .then(function (result) {
+        self._doc = result.doc;
+        self._sha = result.sha;
+        if (self._queue.length) {
+          self._doc = applyChangesLocal(self._doc || {}, self._queue);
+        }
+        self._persistLocalCache();
+        var meta = self._meta("github");
+        self._notify(self._doc, meta);
+        return { doc: self._doc, meta: meta };
+      })
+      .catch(function (e) {
+        if (e && e.name === "OmxError" && (e.code === ERR.NETWORK || e.code === ERR.RATE_LIMIT)) {
+          return { doc: self._doc || null, meta: self._meta("local") };
+        }
+        throw e;
+      });
+  };
+
+  GitHubAdapter.prototype._flush = function (message) {
+    var self = this;
+    if (!self._pat) {
+      return Promise.reject(omxError(ERR.NO_TOKEN, "No PAT configured", false));
+    }
+    return self._putRemote(self._doc, message).then(
+      function (sha) {
+        self._sha = sha;
+        self._queue = [];
+        self._persistLocalCache();
+        var meta = self._meta("github", 0);
+        self._notify(self._doc, meta);
+        return { ok: true, meta: meta };
+      },
+      function (e) {
+        if (e && e.name === "OmxError" && e._isConflict) {
+          return self._fetchRemote().then(function (fresh) {
+            var merged = mergeChangesIntoDoc(fresh.doc || {}, self._queue);
+            self._doc = merged;
+            self._sha = fresh.sha;
+            return self._putRemote(self._doc, message).then(
+              function (sha2) {
+                self._sha = sha2;
+                self._queue = [];
+                self._persistLocalCache();
+                var meta = self._meta("github", 0);
+                self._notify(self._doc, meta);
+                return { ok: true, meta: meta };
+              },
+              function (e2) {
+                self._persistLocalCache();
+                if (e2 && e2.name === "OmxError" && e2._isConflict) {
+                  throw omxError(ERR.CONFLICT, "GitHub PUT conflict after retry", true, e2.status);
+                }
+                throw e2;
+              }
+            );
+          });
+        }
+        throw e;
+      }
+    );
+  };
+
+  GitHubAdapter.prototype.writeEntry = function (changes) {
+    var self = this;
+    if (!self._pat) {
+      return Promise.reject(omxError(ERR.NO_TOKEN, "No PAT configured", false));
+    }
+    self._doc = applyChangesLocal(self._doc || {}, changes);
+    // The queue is keyed on (d, op): a re-sent batch after a failed flush replaces its own
+    // rows rather than stacking duplicates, so meta.dirty stays an honest count.
+    self._queue = dedupeChanges(self._queue.concat(changes));
+    self._persistLocalCache();
+    var message = "ops-matrix: " + changes.length + " change(s) " + (self._todayForMessage());
+    return self._flush(message);
+  };
+
+  GitHubAdapter.prototype._todayForMessage = function () {
+    var d = new Date();
+    return d.toISOString().slice(0, 10);
+  };
+
+  GitHubAdapter.prototype.writeConfig = function (doc) {
+    var self = this;
+    if (!self._pat) {
+      return Promise.reject(omxError(ERR.NO_TOKEN, "No PAT configured", false));
+    }
+    var merged = self._doc ? Object.assign({}, self._doc) : {};
+    merged.schemaVersion = doc.schemaVersion;
+    merged.owner = doc.owner;
+    merged.settings = doc.settings;
+    merged.categories = doc.categories;
+    merged.ops = doc.ops;
+    merged.entries = self._doc ? self._doc.entries : doc.entries;
+    self._doc = merged;
+    self._persistLocalCache();
+    var message = "ops-matrix: config change " + self._todayForMessage();
+    return self._flush(message);
+  };
+
+  GitHubAdapter.prototype.bulkImport = function (doc) {
+    var self = this;
+    if (!self._pat) {
+      return Promise.reject(omxError(ERR.NO_TOKEN, "No PAT configured", false));
+    }
+    self._doc = doc;
+    self._queue = [];
+    self._persistLocalCache();
+    var message = "ops-matrix: bulk import " + self._todayForMessage();
+    return self._flush(message);
+  };
+
+  GitHubAdapter.prototype.exportJson = function () {
+    return Promise.resolve(JSON.stringify(this._doc || null, null, 2));
+  };
+
+  GitHubAdapter.prototype.onExternalChange = function (callback) {
+    this._listeners.push(callback);
+    var self = this;
+    return function unsubscribe() {
+      var idx = self._listeners.indexOf(callback);
+      if (idx !== -1) self._listeners.splice(idx, 1);
+    };
+  };
+
+  GitHubAdapter.prototype.capabilities = function () {
+    return { remote: true, realtime: false, multiUser: false, canExport: true, needsToken: true };
+  };
+
+  // ---------------------------------------------------------------------
+  // LocalStorageAdapter
+  // ---------------------------------------------------------------------
+
+  function LocalStorageAdapter() {
+    this._doc = null;
+    this._listeners = [];
+    this._storageHandler = null;
+  }
+
+  LocalStorageAdapter.prototype.init = function () {
+    var self = this;
+    var docStr = localStorage.getItem(KEYS.DOC);
+    self._doc = docStr ? safeParse(docStr) || null : null;
+    self._storageHandler = function (evt) {
+      if (evt.key === KEYS.DOC) {
+        var newDoc = evt.newValue ? safeParse(evt.newValue) || null : null;
+        self._doc = newDoc;
+        var meta = { sha: null, source: "local", fetchedAt: nowIso(), dirty: 0 };
+        self._notify(newDoc, meta);
+      }
+    };
+    window.addEventListener("storage", self._storageHandler);
+    return Promise.resolve({ ok: true, capabilities: self.capabilities() });
+  };
+
+  LocalStorageAdapter.prototype._notify = function (doc, meta) {
+    for (var i = 0; i < this._listeners.length; i++) {
+      try {
+        this._listeners[i]({ doc: doc, meta: meta });
+      } catch (e) {
+        // ignore listener errors
+      }
+    }
+  };
+
+  LocalStorageAdapter.prototype._meta = function () {
+    return { sha: null, source: "local", fetchedAt: nowIso(), dirty: 0 };
+  };
+
+  LocalStorageAdapter.prototype._persist = function (doc) {
+    try {
+      localStorage.setItem(KEYS.DOC, JSON.stringify(doc));
+    } catch (e) {
+      throw omxError(ERR.QUOTA, "localStorage is full", false, undefined, e);
+    }
+  };
+
+  LocalStorageAdapter.prototype.readAll = function () {
+    var docStr = localStorage.getItem(KEYS.DOC);
+    this._doc = docStr ? safeParse(docStr) || null : null;
+    return Promise.resolve({ doc: this._doc, meta: this._meta() });
+  };
+
+  LocalStorageAdapter.prototype.writeEntry = function (changes) {
+    this._doc = applyChangesLocal(this._doc || {}, changes);
+    this._persist(this._doc);
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  LocalStorageAdapter.prototype.writeConfig = function (doc) {
+    var merged = this._doc ? Object.assign({}, this._doc) : {};
+    merged.schemaVersion = doc.schemaVersion;
+    merged.owner = doc.owner;
+    merged.settings = doc.settings;
+    merged.categories = doc.categories;
+    merged.ops = doc.ops;
+    merged.entries = this._doc ? this._doc.entries : doc.entries;
+    this._doc = merged;
+    this._persist(this._doc);
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  LocalStorageAdapter.prototype.bulkImport = function (doc) {
+    this._doc = doc;
+    this._persist(this._doc);
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  LocalStorageAdapter.prototype.exportJson = function () {
+    return Promise.resolve(JSON.stringify(this._doc || null, null, 2));
+  };
+
+  LocalStorageAdapter.prototype.onExternalChange = function (callback) {
+    this._listeners.push(callback);
+    var self = this;
+    return function unsubscribe() {
+      var idx = self._listeners.indexOf(callback);
+      if (idx !== -1) self._listeners.splice(idx, 1);
+    };
+  };
+
+  LocalStorageAdapter.prototype.capabilities = function () {
+    return { remote: false, realtime: false, multiUser: false, canExport: true, needsToken: false };
+  };
+
+  // ---------------------------------------------------------------------
+  // MemoryAdapter
+  // ---------------------------------------------------------------------
+
+  function MemoryAdapter() {
+    this._doc = null;
+  }
+
+  MemoryAdapter.prototype.init = function () {
+    return Promise.resolve({ ok: true, capabilities: this.capabilities() });
+  };
+
+  MemoryAdapter.prototype._meta = function () {
+    return { sha: null, source: "memory", fetchedAt: nowIso(), dirty: 0 };
+  };
+
+  MemoryAdapter.prototype.readAll = function () {
+    return Promise.resolve({ doc: this._doc, meta: this._meta() });
+  };
+
+  MemoryAdapter.prototype.writeEntry = function (changes) {
+    this._doc = applyChangesLocal(this._doc || {}, changes);
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  MemoryAdapter.prototype.writeConfig = function (doc) {
+    var merged = this._doc ? Object.assign({}, this._doc) : {};
+    merged.schemaVersion = doc.schemaVersion;
+    merged.owner = doc.owner;
+    merged.settings = doc.settings;
+    merged.categories = doc.categories;
+    merged.ops = doc.ops;
+    merged.entries = this._doc ? this._doc.entries : doc.entries;
+    this._doc = merged;
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  MemoryAdapter.prototype.bulkImport = function (doc) {
+    this._doc = doc;
+    return Promise.resolve({ ok: true, meta: this._meta() });
+  };
+
+  MemoryAdapter.prototype.exportJson = function () {
+    return Promise.resolve(JSON.stringify(this._doc || null, null, 2));
+  };
+
+  MemoryAdapter.prototype.onExternalChange = function () {
+    return function unsubscribe() {};
+  };
+
+  MemoryAdapter.prototype.capabilities = function () {
+    return { remote: false, realtime: false, multiUser: false, canExport: true, needsToken: false };
+  };
+
+  // ---------------------------------------------------------------------
+  // Publish
+  // ---------------------------------------------------------------------
+
+  function create(kind, opts) {
+    if (kind === "github") return new GitHubAdapter(opts);
+    if (kind === "local") return new LocalStorageAdapter();
+    if (kind === "memory") return new MemoryAdapter();
+    throw omxError(ERR.UNSUPPORTED, "Unknown storage adapter kind: " + kind, false);
+  }
+
+  window.OpsMatrix.storage.GitHubAdapter = GitHubAdapter;
+  window.OpsMatrix.storage.LocalStorageAdapter = LocalStorageAdapter;
+  window.OpsMatrix.storage.MemoryAdapter = MemoryAdapter;
+  window.OpsMatrix.storage.KEYS = KEYS;
+  window.OpsMatrix.storage.ERR = ERR;
+  window.OpsMatrix.storage.create = create;
+})();
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
+
+(function () {
+  "use strict";
+
+  function el(tag, opts) {
+    var node = document.createElement(tag);
+    if (opts) {
+      if (opts.className) node.className = opts.className;
+      if (opts.text !== undefined) node.textContent = opts.text;
+      if (opts.attrs) {
+        for (var k in opts.attrs) {
+          if (Object.prototype.hasOwnProperty.call(opts.attrs, k)) {
+            node.setAttribute(k, opts.attrs[k]);
+          }
+        }
+      }
+    }
+    return node;
+  }
+
+  function buildCatHeader(cat, derived) {
+    var header = el("div", { className: "omx-grid-cat-header" });
+
+    var titleRow = el("div", { className: "omx-grid-cat-title-row" });
+    var name = el("span", { className: "omx-grid-cat-name", text: cat.name });
+    titleRow.appendChild(name);
+
+    var today = el("span", {
+      className: "omx-grid-cat-today omx-tone-" + cat.today.tone,
+      text: "Today " + cat.today.display
+    });
+    titleRow.appendChild(today);
+    header.appendChild(titleRow);
+
+    var trailsRow = el("div", { className: "omx-grid-cat-trails" });
+    for (var i = 0; i < cat.trails.length; i++) {
+      var trail = cat.trails[i];
+      if (!trail.showOnDashboard) continue;
+      var chip = el("span", {
+        className: "omx-grid-trail-chip omx-tone-" + trail.tone,
+        text: trail.label + ": " + trail.display
+      });
+      trailsRow.appendChild(chip);
+    }
+    header.appendChild(trailsRow);
+
+    return header;
+  }
+
+  function buildTable(cat, derived, handlers) {
+    var table = el("table", {
+      className: "omx-grid-table",
+      attrs: { "data-category-id": cat.id }
+    });
+
+    var thead = el("thead");
+    var headRow = el("tr");
+    var corner = el("th", { className: "omx-grid-corner-cell" });
+    headRow.appendChild(corner);
+
+    for (var d = 0; d < derived.dateAxis.length; d++) {
+      var day = derived.dateAxis[d];
+      var classes = "omx-grid-date-cell";
+      if (day.isToday) classes += " omx-grid-date-today";
+      if (day.isWeekend) classes += " omx-grid-date-weekend";
+      var th = el("th", { className: classes, attrs: { "data-date": day.d, scope: "col" } });
+      var dow = el("span", { className: "omx-grid-date-dow", text: day.dow });
+      var lbl = el("span", { className: "omx-grid-date-label", text: day.label });
+      th.appendChild(dow);
+      th.appendChild(lbl);
+      headRow.appendChild(th);
+    }
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = el("tbody");
+    for (var o = 0; o < cat.ops.length; o++) {
+      var op = cat.ops[o];
+      var tr = el("tr", { attrs: { "data-op-id": op.id } });
+
+      var opCell = el("th", {
+        className: "omx-grid-op-cell",
+        attrs: { scope: "row" }
+      });
+      var opName = el("span", { className: "omx-grid-op-name", text: op.name });
+      opCell.appendChild(opName);
+      if (op.target) {
+        var target = el("span", { className: "omx-grid-op-target", text: op.target });
+        opCell.appendChild(target);
+      }
+      tr.appendChild(opCell);
+
+      for (var dd = 0; dd < derived.dateAxis.length; dd++) {
+        var dayCol = derived.dateAxis[dd];
+        var key = op.id + "|" + dayCol.d;
+        var code = cat.cells[key];
+        var td = el("td", { className: "omx-grid-cell-wrap" });
+        var cellClasses = "omx-grid-cell";
+        if (dayCol.isToday) cellClasses += " omx-grid-cell-today";
+        var btn = el("button", {
+          className: cellClasses,
+          text: code ? code : "",
+          attrs: {
+            type: "button",
+            "data-code": code ? code : "",
+            "data-op-id": op.id,
+            "data-date": dayCol.d,
+            "aria-label": op.name + " " + dayCol.label + (code ? " " + code : " blank")
+          }
+        });
+        btn.addEventListener("click", (function (opId, dateIso) {
+          return function () {
+            handlers.onTick(opId, dateIso);
+          };
+        })(op.id, dayCol.d));
+        td.appendChild(btn);
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+
+    table.addEventListener("keydown", function (evt) {
+      var target = evt.target;
+      if (!target || !target.classList || !target.classList.contains("omx-grid-cell")) return;
+      var key = evt.key;
+      if (key !== "ArrowLeft" && key !== "ArrowRight" && key !== "ArrowUp" && key !== "ArrowDown") return;
+      evt.preventDefault();
+      var td = target.parentElement;
+      var tr = td.parentElement;
+      var cellIndex = Array.prototype.indexOf.call(tr.children, td);
+      var focusTarget = null;
+
+      if (key === "ArrowLeft") {
+        var prevTd = td.previousElementSibling;
+        if (prevTd) focusTarget = prevTd.querySelector(".omx-grid-cell");
+      } else if (key === "ArrowRight") {
+        var nextTd = td.nextElementSibling;
+        if (nextTd) focusTarget = nextTd.querySelector(".omx-grid-cell");
+      } else if (key === "ArrowUp") {
+        var prevTr = tr.previousElementSibling;
+        if (prevTr && prevTr.children[cellIndex]) {
+          focusTarget = prevTr.children[cellIndex].querySelector(".omx-grid-cell");
+        }
+      } else if (key === "ArrowDown") {
+        var nextTr = tr.nextElementSibling;
+        if (nextTr && nextTr.children[cellIndex]) {
+          focusTarget = nextTr.children[cellIndex].querySelector(".omx-grid-cell");
+        }
+      }
+
+      if (focusTarget) focusTarget.focus();
+    });
+
+    return table;
+  }
+
+  function render(container, model, derived, handlers) {
+    container.textContent = "";
+
+    var root = el("div", { className: "omx-grid-root" });
+
+    for (var c = 0; c < derived.categories.length; c++) {
+      var cat = derived.categories[c];
+      var section = el("div", {
+        className: "omx-grid-section",
+        attrs: { "data-category-id": cat.id }
+      });
+
+      section.appendChild(buildCatHeader(cat, derived));
+
+      var scroll = el("div", { className: "omx-grid-scroll" });
+      scroll.appendChild(buildTable(cat, derived, handlers));
+      section.appendChild(scroll);
+
+      root.appendChild(section);
+    }
+
+    container.appendChild(root);
+  }
+
+  window.OpsMatrix.views.grid = { render: render };
+})();
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
+
+(function () {
+  "use strict";
+
+  function findCurrentDate(model, derived) {
+    var d = null;
+    if (model) {
+      d = model.mobileDate || model.selectedDate || model.focusedDate || null;
+    }
+    return d || derived.todayIso;
+  }
+
+  function findAxisIndex(dateAxis, dateIso) {
+    for (var i = 0; i < dateAxis.length; i++) {
+      if (dateAxis[i].d === dateIso) return i;
+    }
+    return -1;
+  }
+
+  function findCode(codes, key) {
+    if (!key) return null;
+    for (var i = 0; i < codes.length; i++) {
+      if (codes[i].key === key) return codes[i];
+    }
+    return null;
+  }
+
+  function render(container, model, derived, handlers) {
+    container.textContent = "";
+
+    var currentDate = findCurrentDate(model, derived);
+    var dateAxis = derived.dateAxis || [];
+    var idx = findAxisIndex(dateAxis, currentDate);
+    var currentEntry = idx >= 0 ? dateAxis[idx] : null;
+    var prevEntry = idx > 0 ? dateAxis[idx - 1] : null;
+    var nextEntry = idx >= 0 && idx < dateAxis.length - 1 ? dateAxis[idx + 1] : null;
+
+    var stepper = document.createElement("div");
+    stepper.className = "omx-mob-stepper";
+
+    var prevBtn = document.createElement("button");
+    prevBtn.type = "button";
+    prevBtn.className = "omx-mob-step-btn omx-mob-step-prev";
+    prevBtn.textContent = "‹ Prev";
+    if (!prevEntry) prevBtn.disabled = true;
+    prevBtn.addEventListener("click", function () {
+      if (prevEntry) handlers.onDateChange(prevEntry.d);
+    });
+    stepper.appendChild(prevBtn);
+
+    var dateLabel = document.createElement("div");
+    dateLabel.className = "omx-mob-step-date";
+    dateLabel.textContent = currentEntry
+      ? currentEntry.dow + " " + currentEntry.label
+      : currentDate;
+    stepper.appendChild(dateLabel);
+
+    var todayBtn = document.createElement("button");
+    todayBtn.type = "button";
+    todayBtn.className = "omx-mob-step-today";
+    todayBtn.textContent = "Today";
+    if (currentDate === derived.todayIso) todayBtn.disabled = true;
+    todayBtn.addEventListener("click", function () {
+      handlers.onDateChange(derived.todayIso);
+    });
+    stepper.appendChild(todayBtn);
+
+    var nextBtn = document.createElement("button");
+    nextBtn.type = "button";
+    nextBtn.className = "omx-mob-step-btn omx-mob-step-next";
+    nextBtn.textContent = "Next ›";
+    if (!nextEntry) nextBtn.disabled = true;
+    nextBtn.addEventListener("click", function () {
+      if (nextEntry) handlers.onDateChange(nextEntry.d);
+    });
+    stepper.appendChild(nextBtn);
+
+    container.appendChild(stepper);
+
+    var categories = derived.categories || [];
+    var totalOps = 0;
+    var doneOps = 0;
+    categories.forEach(function (cat) {
+      (cat.ops || []).forEach(function (op) {
+        totalOps += 1;
+        var key = op.id + "|" + currentDate;
+        var code = cat.cells ? cat.cells[key] : undefined;
+        if (code) doneOps += 1;
+      });
+    });
+
+    var counter = document.createElement("div");
+    counter.className = "omx-mob-counter";
+    counter.textContent = doneOps + " of " + totalOps + " done";
+    container.appendChild(counter);
+
+    var list = document.createElement("div");
+    list.className = "omx-mob-list";
+
+    categories.forEach(function (cat) {
+      var section = document.createElement("section");
+      section.className = "omx-mob-cat";
+
+      var header = document.createElement("div");
+      header.className = "omx-mob-cat-header";
+
+      var nameEl = document.createElement("span");
+      nameEl.className = "omx-mob-cat-name";
+      nameEl.textContent = cat.name;
+      header.appendChild(nameEl);
+
+      var scoreTone = cat.today ? cat.today.tone : "none";
+      var scoreEl = document.createElement("span");
+      scoreEl.className = "omx-mob-cat-score omx-tone-" + scoreTone;
+      scoreEl.textContent = cat.today ? cat.today.display : "--";
+      header.appendChild(scoreEl);
+
+      section.appendChild(header);
+
+      var ops = cat.ops || [];
+      ops.forEach(function (op) {
+        var key = op.id + "|" + currentDate;
+        var code = cat.cells ? cat.cells[key] : undefined;
+        var codeInfo = findCode(derived.codes, code);
+
+        var row = document.createElement("button");
+        row.type = "button";
+        row.className = "omx-mob-op-row";
+        if (code) {
+          row.classList.add("omx-mob-op-row-ticked");
+        }
+
+        var nameSpan = document.createElement("span");
+        nameSpan.className = "omx-mob-op-name";
+        nameSpan.textContent = op.name;
+        row.appendChild(nameSpan);
+
+        var codeSpan = document.createElement("span");
+        codeSpan.className = "omx-mob-op-code";
+        codeSpan.textContent = codeInfo ? codeInfo.label : "Tap to tick";
+        row.appendChild(codeSpan);
+
+        row.addEventListener("click", function () {
+          handlers.onTick(op.id, currentDate);
+        });
+
+        section.appendChild(row);
+      });
+
+      list.appendChild(section);
+    });
+
+    container.appendChild(list);
+  }
+
+  window.OpsMatrix.views.mobile = { render: render };
+})();
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
+
+(function () {
+  "use strict";
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  function toneClass(prefix, tone) {
+    return prefix + " omx-tone-" + (tone || "none");
+  }
+
+  function renderTrailRow(trail) {
+    var row = el("div", "omx-dash-trail-row");
+    row.appendChild(el("span", "omx-dash-trail-label", trail.label));
+    row.appendChild(el("span", toneClass("omx-dash-trail-value", trail.tone), trail.display));
+    return row;
+  }
+
+  function renderTrails(category) {
+    var wrap = el("div", "omx-dash-trails");
+    var trails = category.trails || [];
+    for (var i = 0; i < trails.length; i++) {
+      if (!trails[i].showOnDashboard) continue;
+      wrap.appendChild(renderTrailRow(trails[i]));
+    }
+    return wrap;
+  }
+
+  function renderToday(category) {
+    var wrap = el("div", "omx-dash-today");
+    wrap.appendChild(el("span", "omx-dash-today-label", "Today"));
+    wrap.appendChild(el("span", toneClass("omx-dash-today-value", category.today.tone), category.today.display));
+    return wrap;
+  }
+
+  function renderLadder(category) {
+    var wrap = el("div", "omx-dash-ladder");
+    var ladder = category.ladder || [];
+    for (var i = 0; i < ladder.length; i++) {
+      var d = ladder[i];
+      var item = el("div", toneClass("omx-dash-ladder-day", d.tone));
+      item.appendChild(el("span", "omx-dash-ladder-date", d.label));
+      item.appendChild(el("span", "omx-dash-ladder-score", d.display));
+      wrap.appendChild(item);
+    }
+    return wrap;
+  }
+
+  function renderUnticked(category) {
+    var wrap = el("div", "omx-dash-unticked");
+    var unticked = category.unticked || [];
+    wrap.appendChild(el("div", "omx-dash-unticked-title", "Unticked today (" + unticked.length + ")"));
+    if (unticked.length === 0) {
+      wrap.appendChild(el("div", "omx-dash-unticked-empty", "All done"));
+      return wrap;
+    }
+    var list = el("ul", "omx-dash-unticked-list");
+    for (var i = 0; i < unticked.length; i++) {
+      var li = el("li", "omx-dash-unticked-item", unticked[i].name);
+      list.appendChild(li);
+    }
+    wrap.appendChild(list);
+    return wrap;
+  }
+
+  function renderCard(category) {
+    var card = el("section", "omx-dash-card");
+    var header = el("div", "omx-dash-card-header");
+    header.appendChild(el("h3", "omx-dash-card-name", category.name));
+    header.appendChild(el("span", "omx-dash-card-count", category.opCount + " ops"));
+    card.appendChild(header);
+
+    // Row order contract: trail averages, then today, then the ladder.
+    card.appendChild(renderTrails(category));
+    card.appendChild(renderToday(category));
+    card.appendChild(renderLadder(category));
+    card.appendChild(renderUnticked(category));
+
+    return card;
+  }
+
+  function renderOverall(derived) {
+    var overall = derived.overall;
+    var wrap = el("div", "omx-dash-overall");
+    wrap.appendChild(el("span", toneClass("omx-dash-overall-score", overall.tone), overall.display));
+    wrap.appendChild(el("span", "omx-dash-overall-target", "Target " + derived.targetLabel));
+    wrap.appendChild(el(
+      "span",
+      "omx-dash-overall-categories",
+      overall.categoriesOnTarget + " / " + overall.categoriesTotal + " categories on target"
+    ));
+    if (overall.untickedCount > 0) {
+      wrap.appendChild(el("span", "omx-dash-overall-unticked", overall.untickedCount + " unticked"));
+    }
+    return wrap;
+  }
+
+  function render(container, model, derived, handlers) {
+    container.textContent = "";
+
+    var root = el("div", "omx-dash-root");
+    root.appendChild(el("div", "omx-dash-today-label-top", derived.todayLabel));
+    root.appendChild(renderOverall(derived));
+
+    var grid = el("div", "omx-dash-grid");
+    var categories = derived.categories || [];
+    for (var i = 0; i < categories.length; i++) {
+      grid.appendChild(renderCard(categories[i]));
+    }
+    root.appendChild(grid);
+
+    container.appendChild(root);
+  }
+
+  window.OpsMatrix.views.scoreboard = { render: render };
+})();
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
+
+/*
+ * Ops Matrix - application shell.
+ *
+ * Owns: boot, storage selection, the pull/flush cycle, the debounce, the sync banner,
+ * the Settings panel, the derived model, and every number-to-string conversion.
+ * Views read `derived` and call handlers; they never touch storage, the engine or the DOM
+ * outside their own container. The engine is reached only from here.
+ */
+
+(function () {
+  "use strict";
+
+  var OM = window.OpsMatrix;
+
+  // The single seam: everything else reads the engine as OpsMatrix.engine.
+  OM.engine = window.Engine;
+
+  var KEYS = (OM.storage && OM.storage.KEYS) || {
+    PAT: "omx.pat",
+    REPO_OWNER: "omx.repo.owner",
+    REPO_NAME: "omx.repo.name",
+    REPO_PATH: "omx.repo.path",
+    REPO_BRANCH: "omx.repo.branch",
+    DOC: "omx.doc",
+    DOC_SHA: "omx.doc.sha",
+    QUEUE: "omx.queue",
+    VIEW: "omx.view",
+    VIEWMODE: "omx.viewmode",
+    GRID_DAYS: "omx.grid.days"
+  };
+
+  var ERR = (OM.storage && OM.storage.ERR) || {};
+
+  var DEFAULTS = {
+    repoOwner: "MrJohnWilkinson",
+    repoName: "ops-matrix-data",
+    repoPath: "data.json",
+    repoBranch: "",
+    gridDays: 28,
+    view: "grid",
+    viewMode: "auto",
+    debounceMs: 2000,
+    conflictRetryMs: 5000,
+    mobileQuery: "(max-width: 720px)"
+  };
+
+  // First-run document. Mirrors scripts/ops-matrix/seed/config.json (categories, ops and
+  // settings only - no entries). A device that has never synced starts here; the first
+  // flush commits it to the data repo.
+  var SEED_DOC = {"schemaVersion":1,"owner":{"userKey":"john"},"settings":{"timezone":"Australia/Brisbane","dateFormat":"dd/MM/yyyy","codes":{"T":{"label":"Tick","num":1,"den":1,"counterLabel":"Tick/Track Count","satisfiesEngagement":true},"W":{"label":"Winning","num":1,"den":1,"counterLabel":"Winning Count","satisfiesEngagement":true},"C":{"label":"Adjust","num":0,"den":1,"counterLabel":"Adjust Count","satisfiesEngagement":true},"M":{"label":"Adjust (legacy)","num":0,"den":1,"aliasOf":"C","counterLabel":"Adjust Count","satisfiesEngagement":true},"B":{"label":"Bye","num":0,"den":0,"counterLabel":"NA Count","satisfiesEngagement":true},"":{"label":"Miss (no entry)","num":0,"den":1,"implicit":true,"satisfiesEngagement":false}},"trails":[{"id":"trail1","label":"Trail1 28 day average","days":28,"showOnDashboard":false},{"id":"trail2","label":"Trail2 28 day average","days":28,"showOnDashboard":false},{"id":"trail3","label":"Trail3 28 day average","days":28,"showOnDashboard":true},{"id":"trail4","label":"Trail4 7 day average","days":7,"showOnDashboard":true}],"scoring":{"target":85,"bands":[{"id":"off","label":"Off track","min":0},{"id":"building","label":"Building","min":50},{"id":"close","label":"Close","min":70},{"id":"ontarget","label":"On target","min":85}]},"dashboard":{"lastNDays":7}},"categories":[{"id":"3dvrs","name":"3DVRS","startedOn":"2025-06-19","slots":["3dvrs:0","3dvrs:1","3dvrs:2","3dvrs:3","3dvrs:4","3dvrs:5","3dvrs:6"],"order":1},{"id":"clarity-balance-mlw","name":"Clarity, Balance and Mind Like Water","startedOn":"2025-06-19","slots":["clarity-balance-mlw:0","clarity-balance-mlw:1","clarity-balance-mlw:2","clarity-balance-mlw:3","clarity-balance-mlw:4","clarity-balance-mlw:5","clarity-balance-mlw:6","clarity-balance-mlw:7","clarity-balance-mlw:8","clarity-balance-mlw:9"],"order":2},{"id":"connection-privilege-gratitude","name":"Connection, Privilege and Gratitude","startedOn":"2025-06-19","slots":["connection-privilege-gratitude:0","connection-privilege-gratitude:1"],"order":3},{"id":"fuel","name":"Fuel","startedOn":"2025-06-19","slots":["fuel:0","fuel:1","fuel:2","fuel:3","fuel:4","fuel:5","fuel:6","fuel:7"],"order":4},{"id":"home-refuge-sanctuary","name":"Home Refuge & Sanctuary","startedOn":"2025-09-05","slots":["home-refuge-sanctuary:0","home-refuge-sanctuary:1","home-refuge-sanctuary:2","home-refuge-sanctuary:3","home-refuge-sanctuary:4","home-refuge-sanctuary:5","home-refuge-sanctuary:6","home-refuge-sanctuary:7","home-refuge-sanctuary:8","home-refuge-sanctuary:9","home-refuge-sanctuary:10","home-refuge-sanctuary:11","home-refuge-sanctuary:12"],"order":5},{"id":"personal-hygiene","name":"Personal Hygiene","startedOn":"2025-06-26","slots":["personal-hygiene:0","personal-hygiene:1","personal-hygiene:2","personal-hygiene:3","personal-hygiene:4","personal-hygiene:5"],"order":6}],"ops":[{"id":"3dvrs:0","name":"Clear outlook","excluded":false},{"id":"3dvrs:1","name":"Clear notebooks","excluded":false},{"id":"3dvrs:2","name":"Clear Notepad++","excluded":false},{"id":"3dvrs:3","name":"Clear windows desktop","excluded":false},{"id":"3dvrs:4","name":"Clear system folders","excluded":false},{"id":"3dvrs:5","name":"Sync unfinished tasks","excluded":false},{"id":"3dvrs:6","name":"Migrate Bullet Journal tasks","excluded":false},{"id":"clarity-balance-mlw:0","name":"Meditation","excluded":false},{"id":"clarity-balance-mlw:1","name":"Clear Gmail","excluded":false},{"id":"clarity-balance-mlw:2","name":"Wim Hof / long breaths","excluded":false},{"id":"clarity-balance-mlw:3","name":"Breaths with timer","excluded":false},{"id":"clarity-balance-mlw:4","name":"Meditation Stillness","excluded":false},{"id":"clarity-balance-mlw:5","name":"NSDR","excluded":false},{"id":"clarity-balance-mlw:6","name":"Body Scan","excluded":false},{"id":"clarity-balance-mlw:7","name":"Transcendental Raf","excluded":false},{"id":"clarity-balance-mlw:8","name":"The Way","excluded":false},{"id":"clarity-balance-mlw:9","name":"Breath and Mobility","excluded":false},{"id":"connection-privilege-gratitude:0","name":"Molly Journal","excluded":false},{"id":"connection-privilege-gratitude:1","name":"Gap vs Gain","excluded":false},{"id":"fuel:0","name":"Green drink","excluded":false},{"id":"fuel:1","name":"Yakult","excluded":false},{"id":"fuel:2","name":"30g Protein","excluded":false},{"id":"fuel:3","name":"Creatine","excluded":false},{"id":"fuel:4","name":"Vitamins","excluded":false},{"id":"fuel:5","name":"Fish Oil","excluded":false},{"id":"fuel:6","name":"10g Fibre","excluded":false},{"id":"fuel:7","name":"500mL+ of Water finished","excluded":false},{"id":"home-refuge-sanctuary:0","name":"Washing on","excluded":false},{"id":"home-refuge-sanctuary:1","name":"Beds made","excluded":false},{"id":"home-refuge-sanctuary:2","name":"Vacuum","excluded":false},{"id":"home-refuge-sanctuary:3","name":"Dishes","excluded":false},{"id":"home-refuge-sanctuary:4","name":"Dry Dishes","excluded":false},{"id":"home-refuge-sanctuary:5","name":"Dry dishes away","excluded":false},{"id":"home-refuge-sanctuary:6","name":"Washing away","excluded":false},{"id":"home-refuge-sanctuary:7","name":"Tidy Tables","excluded":false},{"id":"home-refuge-sanctuary:8","name":"Washing hung","excluded":false},{"id":"home-refuge-sanctuary:9","name":"Inbox table and Calendar","excluded":false},{"id":"home-refuge-sanctuary:10","name":"Wipe down Kitchen benches","excluded":false},{"id":"home-refuge-sanctuary:11","name":"Bring in washing if required","excluded":false},{"id":"home-refuge-sanctuary:12","name":"Bins","excluded":false},{"id":"personal-hygiene:0","name":"Teeth","excluded":false},{"id":"personal-hygiene:1","name":"Floss","excluded":false},{"id":"personal-hygiene:2","name":"Cut nails","excluded":false},{"id":"personal-hygiene:3","name":"Trim beard","excluded":false},{"id":"personal-hygiene:4","name":"Shave","excluded":false},{"id":"personal-hygiene:5","name":"Tongue Scraping","excluded":false}],"entries":[]};
+
+  var DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  var SYNC_MESSAGES = {
+    synced: "Up to date",
+    dirty: "Unsaved changes",
+    syncing: "Syncing",
+    offline: "Offline - changes kept on this device",
+    "token-needed": "No token - add a GitHub token in Settings",
+    "conflict-retrying": "Merging a remote change"
+  };
+
+  // -----------------------------------------------------------------------
+  // State
+  // -----------------------------------------------------------------------
+
+  var state = {
+    doc: null,
+    adapter: null,
+    adapterKind: "local",
+    view: DEFAULTS.view,
+    viewMode: DEFAULTS.viewMode,
+    gridDays: DEFAULTS.gridDays,
+    mobileDate: null,
+    queue: [],
+    configDirty: false,
+    flushTimer: null,
+    conflictTimer: null,
+    flushing: false,
+    unsubscribe: null,
+    lastSyncIso: null,
+    sync: { state: "offline", message: SYNC_MESSAGES.offline },
+    importWarnings: [],
+    exportPrimed: false,
+    exportUrl: null,
+    booted: false,
+    lastError: null
+  };
+
+  // -----------------------------------------------------------------------
+  // Small utilities
+  // -----------------------------------------------------------------------
+
+  function isObj(o) { return o !== null && typeof o === "object" && !Array.isArray(o); }
+  function isNum(n) { return typeof n === "number" && isFinite(n); }
+  function clone(x) { return x === undefined ? undefined : JSON.parse(JSON.stringify(x)); }
+  function hasOwn(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+
+  function deepFreeze(x) {
+    if (x === null || typeof x !== "object" || Object.isFrozen(x)) return x;
+    Object.freeze(x);
+    var k;
+    if (Array.isArray(x)) {
+      for (k = 0; k < x.length; k++) deepFreeze(x[k]);
+    } else {
+      for (k in x) { if (hasOwn(x, k)) deepFreeze(x[k]); }
+    }
+    return x;
+  }
+
+  function lsGet(key, fallback) {
+    try {
+      var v = window.localStorage.getItem(key);
+      return v === null || v === undefined ? fallback : v;
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  function lsSet(key, value) {
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function lsRemove(key) {
+    try { window.localStorage.removeItem(key); } catch (e) { /* ignore */ }
+  }
+
+  function byId(id) {
+    return typeof document === "undefined" ? null : document.getElementById(id);
+  }
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = text;
+    return node;
+  }
+
+  // -----------------------------------------------------------------------
+  // Dates and formatting. app.js owns every number-to-string conversion.
+  // -----------------------------------------------------------------------
+
+  function timezone() {
+    if (state.doc && state.doc.settings && state.doc.settings.timezone) {
+      return state.doc.settings.timezone;
+    }
+    return "Australia/Brisbane";
+  }
+
+  function todayIso() {
+    var tz = timezone();
+    try {
+      var fmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit"
+      });
+      var parts = fmt.formatToParts(new Date());
+      var y = "", m = "", d = "";
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === "year") y = parts[i].value;
+        else if (parts[i].type === "month") m = parts[i].value;
+        else if (parts[i].type === "day") d = parts[i].value;
+      }
+      if (y && m && d) return y + "-" + m + "-" + d;
+    } catch (e) { /* fall through to device local */ }
+    var now = new Date();
+    return String(now.getFullYear()) + "-" +
+      String(now.getMonth() + 1 < 10 ? "0" : "") + String(now.getMonth() + 1) + "-" +
+      String(now.getDate() < 10 ? "0" : "") + String(now.getDate());
+  }
+
+  function isoParts(iso) {
+    return {
+      y: Number(iso.slice(0, 4)),
+      m: Number(iso.slice(5, 7)),
+      d: Number(iso.slice(8, 10))
+    };
+  }
+
+  function dowIndex(iso) {
+    var p = isoParts(iso);
+    return new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay();
+  }
+
+  function shortDate(iso) {
+    return iso.slice(8, 10) + "/" + iso.slice(5, 7);
+  }
+
+  function longDate(iso) {
+    var p = isoParts(iso);
+    return DOW[dowIndex(iso)] + " " + iso.slice(8, 10) + " " + MON[p.m - 1] + " " + p.y;
+  }
+
+  function pct(score) {
+    return isNum(score) ? String(Math.round(score)) + "%" : "--";
+  }
+
+  // -----------------------------------------------------------------------
+  // Engine access - every call is wrapped; a throw goes to the banner error path.
+  // -----------------------------------------------------------------------
+
+  function engineCall(fn, fallback) {
+    try {
+      return fn();
+    } catch (e) {
+      state.lastError = e && e.message ? e.message : String(e);
+      setSync("offline", "Calculation error: " + state.lastError);
+      return fallback;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Document helpers
+  // -----------------------------------------------------------------------
+
+  function defaultDoc() {
+    if (SEED_DOC) {
+      var seeded = clone(SEED_DOC);
+      if (!Array.isArray(seeded.entries)) seeded.entries = [];
+      return seeded;
+    }
+    return {
+      schemaVersion: OM.engine ? OM.engine.SCHEMA_VERSION : 1,
+      owner: { userKey: "owner", displayName: "Owner" },
+      settings: OM.engine ? OM.engine.defaultSettings() : {},
+      categories: [],
+      ops: [],
+      entries: []
+    };
+  }
+
+  function opsById(doc) {
+    var map = {}, i;
+    var ops = (doc && doc.ops) || [];
+    for (i = 0; i < ops.length; i++) { if (ops[i] && ops[i].id) map[ops[i].id] = ops[i]; }
+    return map;
+  }
+
+  function entryMap(doc) {
+    var map = {}, i;
+    var entries = (doc && doc.entries) || [];
+    for (i = 0; i < entries.length; i++) {
+      map[entries[i].op + "|" + entries[i].d] = entries[i].c;
+    }
+    return map;
+  }
+
+  function codeAt(doc, opId, dateIso) {
+    var entries = (doc && doc.entries) || [];
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].op === opId && entries[i].d === dateIso) return entries[i].c;
+    }
+    return null;
+  }
+
+  function applyChangesToDoc(doc, changes) {
+    var entries = doc.entries || (doc.entries = []);
+    for (var i = 0; i < changes.length; i++) {
+      var ch = changes[i];
+      var idx = -1;
+      for (var j = 0; j < entries.length; j++) {
+        if (entries[j].d === ch.d && entries[j].op === ch.op) { idx = j; break; }
+      }
+      if (ch.c === null) {
+        if (idx !== -1) entries.splice(idx, 1);
+      } else if (idx !== -1) {
+        entries[idx] = { d: ch.d, op: ch.op, c: ch.c };
+      } else {
+        entries.push({ d: ch.d, op: ch.op, c: ch.c });
+      }
+    }
+    return doc;
+  }
+
+  // -----------------------------------------------------------------------
+  // Derived model. The views read nothing else.
+  // -----------------------------------------------------------------------
+
+  function bandRows(settings) {
+    var raw = (settings.scoring && settings.scoring.bands) || [];
+    var sorted = raw.slice().sort(function (a, b) {
+      return (isNum(a.min) ? a.min : 0) - (isNum(b.min) ? b.min : 0);
+    });
+    var last = sorted.length - 1;
+    return sorted.map(function (b, i) {
+      var tone = "red";
+      if (i === last) tone = "green";
+      else if (i === last - 1) tone = "amber";
+      return {
+        id: b.id, label: b.label, min: isNum(b.min) ? b.min : 0,
+        index: i, tone: tone, cssVar: "--omx-band-" + i
+      };
+    });
+  }
+
+  function codeRows(settings) {
+    var codes = settings.codes || {};
+    var out = [], k;
+    for (k in codes) {
+      if (!hasOwn(codes, k)) continue;
+      if (k === "") continue;
+      if (codes[k] && typeof codes[k].aliasOf === "string") continue;
+      out.push({
+        key: k,
+        label: codes[k].label,
+        num: codes[k].num,
+        den: codes[k].den,
+        counterLabel: codes[k].counterLabel || codes[k].label
+      });
+    }
+    return out;
+  }
+
+  function buildDateAxis(today, days) {
+    var out = [], i, d;
+    for (i = days - 1; i >= 0; i--) {
+      d = OM.engine.addDays(today, -i);
+      var dow = dowIndex(d);
+      out.push({
+        d: d,
+        label: shortDate(d),
+        dow: DOW[dow],
+        isToday: d === today,
+        isWeekend: dow === 0 || dow === 6
+      });
+    }
+    return out;
+  }
+
+  function toneForBand(bands, bandId) {
+    if (!bandId) return "none";
+    for (var i = 0; i < bands.length; i++) { if (bands[i].id === bandId) return bands[i].tone; }
+    return "none";
+  }
+
+  function buildDerived() {
+    var doc = state.doc;
+    var settings = doc.settings || {};
+    var today = todayIso();
+    var bands = bandRows(settings);
+    var codes = codeRows(settings);
+    var cycle = codes.map(function (c) { return c.key; });
+    cycle.push(null);
+
+    var target = (settings.scoring && isNum(settings.scoring.target)) ? settings.scoring.target : null;
+    var axis = buildDateAxis(today, state.gridDays);
+    var axisStart = axis.length ? axis[0].d : today;
+
+    var dash = engineCall(function () { return OM.engine.dashboard(doc, today); }, null);
+    var summaries = dash ? dash.categories : [];
+
+    var opMap = opsById(doc);
+    var cellIndex = entryMap(doc);
+    var trailDefs = settings.trails || [];
+
+    var categories = [];
+    var docCats = {};
+    var i, j;
+    for (i = 0; i < (doc.categories || []).length; i++) docCats[doc.categories[i].id] = doc.categories[i];
+
+    for (i = 0; i < summaries.length; i++) {
+      var s = summaries[i];
+      var cat = docCats[s.id] || { slots: [] };
+
+      var ops = [];
+      var slots = cat.slots || [];
+      for (j = 0; j < slots.length; j++) {
+        var op = opMap[slots[j]];
+        if (!op || op.excluded === true) continue;
+        ops.push({
+          id: op.id,
+          name: op.name,
+          excluded: false,
+          target: typeof op.target === "string" && op.target.length ? op.target : null,
+          slotIndex: j
+        });
+      }
+
+      var cells = {};
+      var opStats = [];
+      for (j = 0; j < ops.length; j++) {
+        var hitCount = 0, scorable = 0;
+        for (var a = 0; a < axis.length; a++) {
+          var key = ops[j].id + "|" + axis[a].d;
+          var c = cellIndex[key];
+          if (c === undefined || c === null) continue;
+          cells[key] = c;
+          var row = (settings.codes && settings.codes[c]) || null;
+          if (row) {
+            if (isNum(row.den) && row.den > 0) scorable += 1;
+            if (isNum(row.num) && row.num > 0) hitCount += 1;
+          }
+        }
+        var rate = scorable > 0 ? (hitCount / scorable) * 100 : null;
+        opStats.push({
+          opId: ops[j].id,
+          hitCount: hitCount,
+          windowDays: axis.length,
+          rate: rate,
+          display: pct(rate)
+        });
+      }
+
+      var trails = [];
+      for (j = 0; j < s.trails.length; j++) {
+        var t = s.trails[j];
+        var def = null;
+        for (var td = 0; td < trailDefs.length; td++) {
+          if (trailDefs[td] && trailDefs[td].id === t.trailId) { def = trailDefs[td]; break; }
+        }
+        trails.push({
+          trailId: t.trailId,
+          label: (def && def.label) || t.trailId,
+          days: t.days,
+          windowStart: t.windowStart,
+          windowEnd: t.windowEnd,
+          score: t.score,
+          band: t.band,
+          tone: toneForBand(bands, t.band),
+          scoredDays: t.scoredDays,
+          nullReason: t.nullReason,
+          display: pct(t.score),
+          showOnDashboard: !!(def && def.showOnDashboard)
+        });
+      }
+
+      var ladder = s.lastNDays.map(function (d) {
+        return {
+          d: d.d,
+          label: shortDate(d.d),
+          dow: DOW[dowIndex(d.d)],
+          score: d.score,
+          band: d.band,
+          tone: toneForBand(bands, d.band),
+          display: pct(d.score)
+        };
+      });
+
+      categories.push({
+        id: s.id,
+        name: s.name,
+        order: isNum(cat.order) ? cat.order : i + 1,
+        opCount: s.opCount,
+        today: {
+          d: s.today.d,
+          score: s.today.score,
+          band: s.today.band,
+          tone: toneForBand(bands, s.today.band),
+          display: pct(s.today.score)
+        },
+        trails: trails,
+        ladder: ladder,
+        unticked: s.unticked.map(function (u) { return { id: u.id, name: u.name }; }),
+        ops: ops,
+        cells: cells,
+        opStats: opStats
+      });
+    }
+
+    var sum = 0, n = 0, untickedCount = 0, onTarget = 0;
+    for (i = 0; i < categories.length; i++) {
+      var sc = categories[i].today.score;
+      if (isNum(sc)) {
+        sum += sc;
+        n += 1;
+        if (target !== null && sc >= target) onTarget += 1;
+      }
+      untickedCount += categories[i].unticked.length;
+    }
+    var overallScore = n > 0 ? sum / n : null;
+    var overallBand = engineCall(function () { return OM.engine.band(settings, overallScore); }, null);
+
+    return deepFreeze({
+      todayIso: today,
+      todayLabel: longDate(today),
+      target: target,
+      targetLabel: target === null ? "--" : String(target) + "%",
+      bands: bands,
+      codes: codes,
+      cycle: cycle,
+      gridDays: state.gridDays,
+      dateAxis: axis,
+      axisStart: axisStart,
+      categories: categories,
+      overall: {
+        todayScore: overallScore,
+        tone: toneForBand(bands, overallBand),
+        display: pct(overallScore),
+        untickedCount: untickedCount,
+        categoriesOnTarget: onTarget,
+        categoriesTotal: categories.length
+      },
+      sync: {
+        state: state.sync.state,
+        dirty: state.queue.length + (state.configDirty ? 1 : 0),
+        lastSyncIso: state.lastSyncIso,
+        message: state.sync.message
+      }
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // Sync banner
+  // -----------------------------------------------------------------------
+
+  function setSync(nextState, message) {
+    state.sync.state = nextState;
+    state.sync.message = message || SYNC_MESSAGES[nextState] || nextState;
+    paintBanner();
+  }
+
+  function paintBanner() {
+    var banner = byId("omx-sync-banner");
+    if (!banner) return;
+    banner.setAttribute("data-state", state.sync.state);
+    var msg = banner.querySelector(".omx-app-sync-message");
+    if (msg) msg.textContent = state.sync.message;
+    var dirty = banner.querySelector(".omx-app-sync-dirty");
+    var count = state.queue.length + (state.configDirty ? 1 : 0);
+    if (dirty) dirty.textContent = count > 0 ? String(count) + " pending" : "";
+    var btn = banner.querySelector(".omx-app-sync-token-btn");
+    if (btn) btn.hidden = state.sync.state !== "token-needed";
+  }
+
+  function reportError(e) {
+    var code = e && e.code;
+    var msg = (e && e.message) || String(e);
+    state.lastError = msg;
+    if (code === ERR.NO_TOKEN || code === ERR.BAD_TOKEN) {
+      setSync("token-needed", code === ERR.BAD_TOKEN ? "Token rejected by GitHub" : SYNC_MESSAGES["token-needed"]);
+    } else if (code === ERR.NETWORK) {
+      setSync("offline", SYNC_MESSAGES.offline);
+    } else if (code === ERR.RATE_LIMIT) {
+      setSync("offline", "GitHub rate limit - retrying later");
+    } else if (code === ERR.CONFLICT) {
+      setSync("conflict-retrying", "Remote changed - merging and retrying");
+      if (state.conflictTimer) clearTimeout(state.conflictTimer);
+      state.conflictTimer = setTimeout(function () {
+        state.conflictTimer = null;
+        if (state.queue.length || state.configDirty) {
+          setSync("dirty", SYNC_MESSAGES.dirty);
+          scheduleFlush(0);
+        } else {
+          setSync("synced", SYNC_MESSAGES.synced);
+        }
+        render();
+      }, DEFAULTS.conflictRetryMs);
+    } else if (code === ERR.QUOTA) {
+      setSync("offline", "This device is out of storage");
+    } else if (code === ERR.NOT_FOUND) {
+      setSync("dirty", "Data file not created yet - it will be written on the next save");
+    } else if (code === ERR.PARSE) {
+      setSync("offline", "Stored data could not be read");
+    } else {
+      setSync("offline", msg);
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Storage
+  // -----------------------------------------------------------------------
+
+  function repoOpts() {
+    return {
+      owner: lsGet(KEYS.REPO_OWNER, DEFAULTS.repoOwner),
+      name: lsGet(KEYS.REPO_NAME, DEFAULTS.repoName),
+      path: lsGet(KEYS.REPO_PATH, DEFAULTS.repoPath),
+      branch: lsGet(KEYS.REPO_BRANCH, DEFAULTS.repoBranch),
+      pat: lsGet(KEYS.PAT, "")
+    };
+  }
+
+  function chooseKind() {
+    var o = repoOpts();
+    return (o.pat && o.owner && o.name && o.path) ? "github" : "local";
+  }
+
+  function initStorage() {
+    if (state.unsubscribe) {
+      try { state.unsubscribe(); } catch (e) { /* ignore */ }
+      state.unsubscribe = null;
+    }
+    var kind = chooseKind();
+    state.adapterKind = kind;
+    state.adapter = OM.storage.create(kind);
+    var opts = repoOpts();
+    return state.adapter.init(opts).then(function (res) {
+      state.unsubscribe = state.adapter.onExternalChange(function (evt) {
+        if (evt && evt.doc) {
+          state.doc = evt.doc;
+          persistDocLocally();
+          render();
+        }
+      });
+      if (!res || res.ok !== true) {
+        setSync("token-needed", SYNC_MESSAGES["token-needed"]);
+      }
+      return res;
+    });
+  }
+
+  function persistDocLocally() {
+    if (!state.doc) return;
+    if (!lsSet(KEYS.DOC, JSON.stringify(state.doc))) {
+      setSync("offline", "This device is out of storage");
+    }
+  }
+
+  function persistQueue() {
+    lsSet(KEYS.QUEUE, JSON.stringify(state.queue));
+  }
+
+  function loadQueue() {
+    try {
+      var raw = lsGet(KEYS.QUEUE, "[]");
+      var parsed = JSON.parse(raw);
+      state.queue = Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      state.queue = [];
+    }
+  }
+
+  function cachedDoc() {
+    try {
+      var raw = lsGet(KEYS.DOC, "");
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      return isObj(parsed) ? parsed : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function adoptDoc(raw) {
+    var incoming = raw || cachedDoc() || defaultDoc();
+    var result = engineCall(function () { return OM.engine.migrate(incoming); }, null);
+    state.doc = result ? result.doc : incoming;
+    if (state.queue.length) applyChangesToDoc(state.doc, state.queue);
+    persistDocLocally();
+    // A device-local adapter has no remote to learn the document from, so hand it the whole
+    // thing; otherwise its first writeEntry would build a document out of ticks alone.
+    if (state.adapter && state.adapterKind !== "github") {
+      try {
+        var handoff = state.adapter.bulkImport(state.doc);
+        if (handoff && typeof handoff.then === "function") {
+          handoff.then(null, function (e) { reportError(e); });
+        }
+      } catch (e) {
+        reportError(e);
+      }
+    }
+  }
+
+  function pull() {
+    if (!state.adapter) return Promise.resolve();
+    setSync("syncing", SYNC_MESSAGES.syncing);
+    render();
+    return state.adapter.readAll().then(function (res) {
+      var hadRemoteDoc = !!(res && res.doc);
+      adoptDoc(res && res.doc);
+      // First run against an empty data repo: the seed we just adopted has never been
+      // committed, so mark it dirty and let the normal flush write it.
+      if (!hadRemoteDoc && res && res.meta && res.meta.source === "github") state.configDirty = true;
+      state.lastSyncIso = (res && res.meta && res.meta.fetchedAt) || new Date().toISOString();
+      if (state.queue.length || state.configDirty) {
+        setSync("dirty", SYNC_MESSAGES.dirty);
+        scheduleFlush(DEFAULTS.debounceMs);
+      } else if (state.adapterKind === "github") {
+        setSync("synced", SYNC_MESSAGES.synced);
+      } else if (chooseKind() === "local" && !lsGet(KEYS.PAT, "")) {
+        setSync("token-needed", SYNC_MESSAGES["token-needed"]);
+      } else {
+        setSync("synced", SYNC_MESSAGES.synced);
+      }
+      render();
+      return res;
+    }, function (e) {
+      if (!state.doc) adoptDoc(null);
+      reportError(e);
+      render();
+    });
+  }
+
+  function scheduleFlush(delayMs) {
+    if (state.flushTimer) clearTimeout(state.flushTimer);
+    state.flushTimer = setTimeout(function () {
+      state.flushTimer = null;
+      flush();
+    }, delayMs === undefined ? DEFAULTS.debounceMs : delayMs);
+  }
+
+  // ONE commit per flush: the whole batched queue goes through a single writeEntry call.
+  function flush() {
+    if (!state.adapter) return Promise.resolve();
+    if (state.flushing) { scheduleFlush(250); return Promise.resolve(); }
+    if (!state.queue.length && !state.configDirty) return Promise.resolve();
+
+    var batch = state.queue.slice();
+    var wantsConfig = state.configDirty;
+    state.flushing = true;
+    setSync("syncing", SYNC_MESSAGES.syncing);
+    render();
+
+    var work;
+    if (wantsConfig) {
+      work = state.adapter.writeConfig(state.doc).then(function () {
+        state.configDirty = false;
+        if (batch.length) return state.adapter.writeEntry(batch);
+        return null;
+      });
+    } else {
+      work = state.adapter.writeEntry(batch);
+    }
+
+    return work.then(function (res) {
+      state.flushing = false;
+      var flushed = {};
+      for (var i = 0; i < batch.length; i++) flushed[batch[i].d + "|" + batch[i].op] = true;
+      state.queue = state.queue.filter(function (ch) { return !flushed[ch.d + "|" + ch.op]; });
+      persistQueue();
+      state.lastSyncIso = (res && res.meta && res.meta.fetchedAt) || new Date().toISOString();
+      if (state.queue.length || state.configDirty) {
+        setSync("dirty", SYNC_MESSAGES.dirty);
+        scheduleFlush(DEFAULTS.debounceMs);
+      } else {
+        setSync("synced", SYNC_MESSAGES.synced);
+      }
+      render();
+    }, function (e) {
+      state.flushing = false;
+      reportError(e);
+      render();
+    });
+  }
+
+  // -----------------------------------------------------------------------
+  // Config path writes
+  // -----------------------------------------------------------------------
+
+  function parsePath(path) {
+    var parts = [];
+    var re = /\["([^"]*)"\]|\[(\d+)\]|([^.[\]]+)/g;
+    var m;
+    while ((m = re.exec(path)) !== null) {
+      if (m[1] !== undefined) parts.push({ k: m[1], quoted: true });
+      else if (m[2] !== undefined) parts.push({ k: Number(m[2]), quoted: false });
+      else parts.push({ k: m[3], quoted: false });
+    }
+    return parts;
+  }
+
+  function setPath(root, path, value) {
+    var parts = parsePath(path);
+    if (!parts.length) return false;
+    var node = root;
+    for (var i = 0; i < parts.length - 1; i++) {
+      var k = parts[i].k;
+      if (node === null || node === undefined) return false;
+      if (node[k] === undefined || node[k] === null) node[k] = {};
+      node = node[k];
+    }
+    var leaf = parts[parts.length - 1].k;
+    if (leaf === "__key") {
+      // rename the map key that holds this node (used by the code editor)
+      return false;
+    }
+    node[leaf] = value;
+    return true;
+  }
+
+  function applyLocalConfig(path, value) {
+    if (path === "__local.repo.owner") { lsSet(KEYS.REPO_OWNER, String(value)); return "reinit"; }
+    if (path === "__local.repo.name") { lsSet(KEYS.REPO_NAME, String(value)); return "reinit"; }
+    if (path === "__local.repo.path") { lsSet(KEYS.REPO_PATH, String(value)); return "reinit"; }
+    if (path === "__local.repo.branch") { lsSet(KEYS.REPO_BRANCH, String(value)); return "reinit"; }
+    if (path === "__local.grid.days") {
+      var n = Math.max(1, Math.trunc(Number(value) || DEFAULTS.gridDays));
+      state.gridDays = n;
+      lsSet(KEYS.GRID_DAYS, String(n));
+      return "render";
+    }
+    if (path === "__local.viewmode") {
+      state.viewMode = String(value);
+      lsSet(KEYS.VIEWMODE, state.viewMode);
+      applyViewMode();
+      return "render";
+    }
+    return null;
+  }
+
+  function renameCode(oldKey, newKey) {
+    if (!newKey || newKey === oldKey) return;
+    var codes = state.doc.settings.codes;
+    if (!codes || !hasOwn(codes, oldKey) || hasOwn(codes, newKey)) return;
+    var rebuilt = {}, k;
+    for (k in codes) {
+      if (!hasOwn(codes, k)) continue;
+      rebuilt[k === oldKey ? newKey : k] = codes[k];
+    }
+    state.doc.settings.codes = rebuilt;
+    var entries = state.doc.entries || [];
+    for (var i = 0; i < entries.length; i++) {
+      if (entries[i].c === oldKey) entries[i].c = newKey;
+    }
+    markConfigDirty();
+  }
+
+  function markConfigDirty() {
+    state.configDirty = true;
+    persistDocLocally();
+    setSync("dirty", SYNC_MESSAGES.dirty);
+    scheduleFlush(DEFAULTS.debounceMs);
+  }
+
+  // -----------------------------------------------------------------------
+  // Handlers - the exact contract the views call
+  // -----------------------------------------------------------------------
+
+  function nextInCycle(cycle, current) {
+    var cur = current === undefined ? null : current;
+    var idx = cycle.indexOf(cur);
+    if (idx === -1) return cycle.length ? cycle[0] : null;
+    return cycle[(idx + 1) % cycle.length];
+  }
+
+  var handlers = {
+    onTick: function (opId, dateISO, nextCode) {
+      if (!state.doc) return;
+      var settings = state.doc.settings || {};
+      var cycle = codeRows(settings).map(function (c) { return c.key; });
+      cycle.push(null);
+      var current = codeAt(state.doc, opId, dateISO);
+      var code = nextCode === undefined ? nextInCycle(cycle, current) : nextCode;
+      var change = { d: dateISO, op: opId, c: code === undefined ? null : code };
+
+      applyChangesToDoc(state.doc, [change]);
+      persistDocLocally();
+
+      state.queue = state.queue.filter(function (ch) {
+        return !(ch.d === change.d && ch.op === change.op);
+      });
+      state.queue.push(change);
+      persistQueue();
+
+      setSync("dirty", SYNC_MESSAGES.dirty);
+      scheduleFlush(DEFAULTS.debounceMs);
+      render();
+    },
+
+    onConfigChange: function (path, value) {
+      if (typeof path !== "string") return;
+      var local = applyLocalConfig(path, value);
+      if (local === "reinit") {
+        initStorage().then(pull);
+        return;
+      }
+      if (local === "render") { render(); return; }
+      if (!state.doc) return;
+      if (setPath(state.doc, path, value)) {
+        markConfigDirty();
+        render();
+      }
+    },
+
+    onImport: function (file) {
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var parsed;
+        try {
+          parsed = JSON.parse(String(reader.result));
+        } catch (e) {
+          state.importWarnings = [{ code: "parse", message: "That file is not valid JSON." }];
+          render();
+          return;
+        }
+        var result = engineCall(function () { return OM.engine.migrate(parsed); }, null);
+        if (!result) return;
+        state.importWarnings = result.warnings || [];
+        state.doc = result.doc;
+        state.queue = [];
+        persistQueue();
+        persistDocLocally();
+        setSync("syncing", SYNC_MESSAGES.syncing);
+        render();
+        state.adapter.bulkImport(state.doc).then(function () {
+          setSync("synced", SYNC_MESSAGES.synced);
+          render();
+        }, function (e) {
+          reportError(e);
+          render();
+        });
+      };
+      reader.onerror = function () {
+        state.importWarnings = [{ code: "read", message: "That file could not be read." }];
+        render();
+      };
+      reader.readAsText(file);
+    },
+
+    onExport: function () {
+      var link = byId("omx-app-export");
+      if (!link || !state.adapter) return;
+      state.adapter.exportJson().then(function (json) {
+        var payload = json && json !== "null" ? json : JSON.stringify(state.doc, null, 2);
+        if (state.exportUrl) {
+          try { URL.revokeObjectURL(state.exportUrl); } catch (e) { /* ignore */ }
+        }
+        state.exportUrl = URL.createObjectURL(new Blob([payload], { type: "application/json" }));
+        link.href = state.exportUrl;
+        link.download = "ops-matrix-" + todayIso() + ".json";
+        state.exportPrimed = true;
+        link.click();
+        state.exportPrimed = false;
+      });
+    },
+
+    onPatSave: function (token) {
+      var t = String(token || "").trim();
+      if (t) lsSet(KEYS.PAT, t); else lsRemove(KEYS.PAT);
+      initStorage().then(function () {
+        return pull();
+      });
+    },
+
+    onPatTest: function () {
+      if (!state.adapter) return;
+      setSync("syncing", "Testing the connection");
+      render();
+      state.adapter.readAll().then(function (res) {
+        if (res && res.meta && res.meta.source === "github") {
+          setSync("synced", "Token works - connected to the data repo");
+        } else {
+          setSync("token-needed", "No remote connection - check the token and repo fields");
+        }
+        render();
+      }, function (e) {
+        reportError(e);
+        render();
+      });
+    },
+
+    onViewSwitch: function (name) {
+      if (["grid", "mobile", "scoreboard", "settings"].indexOf(name) === -1) return;
+      state.view = name;
+      lsSet(KEYS.VIEW, name);
+      render();
+    },
+
+    onDateChange: function (dateISO) {
+      state.mobileDate = dateISO;
+      render();
+    },
+
+    onSyncNow: function () {
+      pull().then(function () { return flush(); });
+    },
+
+    onAddOp: function (categoryId, name) {
+      if (!state.doc || !name) return;
+      var cats = state.doc.categories || [];
+      for (var i = 0; i < cats.length; i++) {
+        if (cats[i].id !== categoryId) continue;
+        var slots = cats[i].slots || (cats[i].slots = []);
+        var opId = categoryId + ":" + slots.length;
+        var guard = 0;
+        while (opsById(state.doc)[opId] && guard < 1000) {
+          guard += 1;
+          opId = categoryId + ":" + (slots.length + guard);
+        }
+        state.doc.ops.push({ id: opId, name: String(name), excluded: false });
+        slots.push(opId);
+        markConfigDirty();
+        render();
+        return;
+      }
+    },
+
+    onAddCategory: function (name, startedOnISO) {
+      if (!state.doc || !name) return;
+      var base = String(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+      if (!base) base = "category";
+      var id = base, guard = 1;
+      var cats = state.doc.categories || (state.doc.categories = []);
+      var taken = {};
+      for (var i = 0; i < cats.length; i++) taken[cats[i].id] = true;
+      while (taken[id] && guard < 1000) { id = base + "-" + guard; guard += 1; }
+      cats.push({
+        id: id,
+        name: String(name),
+        startedOn: startedOnISO || todayIso(),
+        slots: [],
+        order: cats.length + 1
+      });
+      markConfigDirty();
+      render();
+    }
+  };
+
+  // -----------------------------------------------------------------------
+  // Settings panel (app.js owns it; it is not a view module)
+  // -----------------------------------------------------------------------
+
+  function field(labelText, input) {
+    var wrap = el("label", "omx-app-field");
+    wrap.appendChild(el("span", null, labelText));
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  function textInput(value, onChange, type) {
+    var input = document.createElement("input");
+    input.type = type || "text";
+    input.value = value === undefined || value === null ? "" : String(value);
+    input.addEventListener("change", function () { onChange(input.value); });
+    return input;
+  }
+
+  function numberInput(value, onChange) {
+    var input = document.createElement("input");
+    input.type = "number";
+    input.value = isNum(value) ? String(value) : "";
+    input.addEventListener("change", function () { onChange(Number(input.value)); });
+    return input;
+  }
+
+  function checkboxInput(checked, onChange) {
+    var input = document.createElement("input");
+    input.type = "checkbox";
+    input.checked = !!checked;
+    input.addEventListener("change", function () { onChange(input.checked); });
+    return input;
+  }
+
+  function button(text, onClick, className) {
+    var b = el("button", className || null, text);
+    b.type = "button";
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function renderBands() {
+    var host = byId("omx-app-bands");
+    if (!host) return;
+    host.textContent = "";
+    var bands = (state.doc.settings.scoring && state.doc.settings.scoring.bands) || [];
+    bands.forEach(function (b, i) {
+      var row = el("div", "omx-app-repeat-row");
+      row.appendChild(field("Id", textInput(b.id, function (v) {
+        handlers.onConfigChange("settings.scoring.bands[" + i + "].id", v);
+      })));
+      row.appendChild(field("Label", textInput(b.label, function (v) {
+        handlers.onConfigChange("settings.scoring.bands[" + i + "].label", v);
+      })));
+      row.appendChild(field("Min %", numberInput(b.min, function (v) {
+        handlers.onConfigChange("settings.scoring.bands[" + i + "].min", v);
+      })));
+      row.appendChild(button("Remove", function () {
+        bands.splice(i, 1);
+        markConfigDirty();
+        render();
+      }));
+      host.appendChild(row);
+    });
+  }
+
+  function renderTrails() {
+    var host = byId("omx-app-trails");
+    if (!host) return;
+    host.textContent = "";
+    var trails = state.doc.settings.trails || [];
+    trails.forEach(function (t, i) {
+      var row = el("div", "omx-app-repeat-row");
+      row.appendChild(field("Label", textInput(t.label, function (v) {
+        handlers.onConfigChange("settings.trails[" + i + "].label", v);
+      })));
+      row.appendChild(field("Days", numberInput(t.days, function (v) {
+        handlers.onConfigChange("settings.trails[" + i + "].days", Math.max(1, Math.trunc(v || 1)));
+      })));
+      row.appendChild(field("On dashboard", checkboxInput(t.showOnDashboard, function (v) {
+        handlers.onConfigChange("settings.trails[" + i + "].showOnDashboard", v);
+      })));
+      host.appendChild(row);
+    });
+  }
+
+  function renderCodes() {
+    var host = byId("omx-app-codes");
+    if (!host) return;
+    host.textContent = "";
+    var codes = state.doc.settings.codes || {};
+    Object.keys(codes).forEach(function (key) {
+      var c = codes[key];
+      var row = el("div", "omx-app-repeat-row");
+      var quoted = 'settings.codes["' + key + '"]';
+      if (key === "") {
+        row.appendChild(el("span", null, "Miss (no entry)"));
+      } else {
+        row.appendChild(field("Key", textInput(key, function (v) {
+          renameCode(key, String(v).trim());
+          render();
+        })));
+      }
+      row.appendChild(field("Label", textInput(c.label, function (v) {
+        handlers.onConfigChange(quoted + ".label", v);
+      })));
+      row.appendChild(field("Num", numberInput(c.num, function (v) {
+        handlers.onConfigChange(quoted + ".num", v);
+      })));
+      row.appendChild(field("Den", numberInput(c.den, function (v) {
+        handlers.onConfigChange(quoted + ".den", v);
+      })));
+      row.appendChild(field("Counter label", textInput(c.counterLabel, function (v) {
+        handlers.onConfigChange(quoted + ".counterLabel", v);
+      })));
+      if (key !== "") {
+        row.appendChild(button("Remove", function () {
+          delete state.doc.settings.codes[key];
+          markConfigDirty();
+          render();
+        }));
+      }
+      host.appendChild(row);
+    });
+  }
+
+  function renderCategories() {
+    var host = byId("omx-app-categories");
+    if (!host) return;
+    host.textContent = "";
+    var cats = state.doc.categories || [];
+    var ops = state.doc.ops || [];
+    var opIndex = {};
+    ops.forEach(function (o, i) { opIndex[o.id] = i; });
+
+    cats.forEach(function (cat, ci) {
+      var block = el("div", "omx-app-repeat-row");
+
+      block.appendChild(field("Name", textInput(cat.name, function (v) {
+        handlers.onConfigChange("categories[" + ci + "].name", v);
+      })));
+      block.appendChild(field("Started on", textInput(cat.startedOn, function (v) {
+        handlers.onConfigChange("categories[" + ci + "].startedOn", v);
+      })));
+      block.appendChild(field("Order", numberInput(cat.order, function (v) {
+        handlers.onConfigChange("categories[" + ci + "].order", v);
+      })));
+
+      var opList = el("div", "omx-app-repeat-list");
+      (cat.slots || []).forEach(function (slotId) {
+        var oi = opIndex[slotId];
+        if (oi === undefined) return;
+        var op = ops[oi];
+        var opRow = el("div", "omx-app-repeat-row");
+        opRow.appendChild(field("Item", textInput(op.name, function (v) {
+          handlers.onConfigChange("ops[" + oi + "].name", v);
+        })));
+        opRow.appendChild(field("Target", textInput(op.target, function (v) {
+          handlers.onConfigChange("ops[" + oi + "].target", v);
+        })));
+        opRow.appendChild(field("Excluded", checkboxInput(op.excluded, function (v) {
+          handlers.onConfigChange("ops[" + oi + "].excluded", v);
+        })));
+        opList.appendChild(opRow);
+      });
+      block.appendChild(opList);
+
+      var nameBox = document.createElement("input");
+      nameBox.type = "text";
+      nameBox.placeholder = "New item name";
+      block.appendChild(nameBox);
+      block.appendChild(button("Add item", function () {
+        var v = nameBox.value.trim();
+        if (v) handlers.onAddOp(cat.id, v);
+      }));
+
+      host.appendChild(block);
+    });
+  }
+
+  function renderImportWarnings() {
+    var host = byId("omx-app-import-warnings");
+    if (!host) return;
+    host.textContent = "";
+    if (!state.importWarnings.length) return;
+    host.appendChild(el("div", null, String(state.importWarnings.length) + " import warning(s)"));
+    var list = el("ul");
+    state.importWarnings.slice(0, 50).forEach(function (w) {
+      list.appendChild(el("li", null, (w.code || "warning") + ": " + (w.message || "")));
+    });
+    host.appendChild(list);
+  }
+
+  function syncStaticSettingsInputs() {
+    var s = state.doc.settings || {};
+    var pairs = [
+      ["omx-app-repo-owner", lsGet(KEYS.REPO_OWNER, DEFAULTS.repoOwner)],
+      ["omx-app-repo-name", lsGet(KEYS.REPO_NAME, DEFAULTS.repoName)],
+      ["omx-app-repo-path", lsGet(KEYS.REPO_PATH, DEFAULTS.repoPath)],
+      ["omx-app-repo-branch", lsGet(KEYS.REPO_BRANCH, DEFAULTS.repoBranch)],
+      ["omx-app-target", (s.scoring && s.scoring.target) !== undefined ? s.scoring.target : ""],
+      ["omx-app-timezone", s.timezone || ""],
+      ["omx-app-date-format", s.dateFormat || ""],
+      ["omx-app-last-n-days", (s.dashboard && s.dashboard.lastNDays) !== undefined ? s.dashboard.lastNDays : ""],
+      ["omx-app-grid-days", state.gridDays],
+      ["omx-app-viewmode", state.viewMode]
+    ];
+    pairs.forEach(function (p) {
+      var node = byId(p[0]);
+      if (node && document.activeElement !== node) node.value = String(p[1]);
+    });
+  }
+
+  function renderSettings() {
+    if (!state.doc) return;
+    syncStaticSettingsInputs();
+    renderBands();
+    renderTrails();
+    renderCodes();
+    renderCategories();
+    renderImportWarnings();
+  }
+
+  // -----------------------------------------------------------------------
+  // Rendering
+  // -----------------------------------------------------------------------
+
+  var VIEW_CONTAINERS = {
+    grid: "omx-view-grid",
+    mobile: "omx-view-mobile",
+    scoreboard: "omx-view-scoreboard",
+    settings: "omx-view-settings"
+  };
+
+  function applyViewMode() {
+    var root = byId("omx-app");
+    if (root) root.setAttribute("data-viewmode", state.viewMode);
+  }
+
+  function autoView() {
+    if (state.viewMode === "desktop") return "grid";
+    if (state.viewMode === "mobile") return "mobile";
+    var small = false;
+    try {
+      small = window.matchMedia(DEFAULTS.mobileQuery).matches;
+    } catch (e) { /* no matchMedia: stay desktop */ }
+    return small ? "mobile" : "grid";
+  }
+
+  function render() {
+    if (typeof document === "undefined") return;
+    var root = byId("omx-app");
+    if (!root || !state.doc) { paintBanner(); return; }
+
+    root.setAttribute("data-view", state.view);
+    applyViewMode();
+
+    var derived = buildDerived();
+    var model = clone(state.doc);
+    model.mobileDate = state.mobileDate || derived.todayIso;
+    deepFreeze(model);
+
+    var name;
+    for (name in VIEW_CONTAINERS) {
+      if (!hasOwn(VIEW_CONTAINERS, name)) continue;
+      var node = byId(VIEW_CONTAINERS[name]);
+      if (node) node.hidden = name !== state.view;
+    }
+
+    var nav = byId("omx-nav");
+    if (nav) {
+      var btns = nav.querySelectorAll("[data-view-btn]");
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].setAttribute("data-active", btns[i].getAttribute("data-view-btn") === state.view ? "true" : "false");
+      }
+    }
+
+    if (state.view === "settings") {
+      renderSettings();
+    } else {
+      var container = byId(VIEW_CONTAINERS[state.view]);
+      var view = OM.views[state.view];
+      if (container && view && typeof view.render === "function") {
+        var left = container.scrollLeft;
+        var top = container.scrollTop;
+        try {
+          view.render(container, model, derived, handlers);
+        } catch (e) {
+          container.textContent = "";
+          container.appendChild(el("div", null, "This view could not be drawn: " + (e && e.message ? e.message : String(e))));
+        }
+        container.scrollLeft = left;
+        container.scrollTop = top;
+      }
+    }
+
+    paintBanner();
+  }
+
+  // -----------------------------------------------------------------------
+  // Wiring
+  // -----------------------------------------------------------------------
+
+  function wireShell() {
+    var nav = byId("omx-nav");
+    if (nav) {
+      nav.addEventListener("click", function (evt) {
+        var btn = evt.target && evt.target.closest ? evt.target.closest("[data-view-btn]") : null;
+        if (!btn) return;
+        handlers.onViewSwitch(btn.getAttribute("data-view-btn"));
+      });
+    }
+
+    var banner = byId("omx-sync-banner");
+    if (banner) {
+      var tokenBtn = banner.querySelector(".omx-app-sync-token-btn");
+      if (tokenBtn) tokenBtn.addEventListener("click", function () { handlers.onViewSwitch("settings"); });
+      banner.addEventListener("dblclick", function () { handlers.onSyncNow(); });
+    }
+
+    var patSave = byId("omx-app-pat-save");
+    var patInput = byId("omx-app-pat");
+    if (patSave && patInput) {
+      patSave.addEventListener("click", function () {
+        handlers.onPatSave(patInput.value);
+        patInput.value = "";
+      });
+    }
+    var patTest = byId("omx-app-pat-test");
+    if (patTest) patTest.addEventListener("click", function () { handlers.onPatTest(); });
+
+    var staticInputs = document.querySelectorAll("[data-config-path]");
+    for (var i = 0; i < staticInputs.length; i++) {
+      (function (node) {
+        node.addEventListener("change", function () {
+          var path = node.getAttribute("data-config-path");
+          var value = node.type === "checkbox" ? node.checked
+            : (node.type === "number" ? Number(node.value) : node.value);
+          handlers.onConfigChange(path, value);
+        });
+      })(staticInputs[i]);
+    }
+
+    var bandAdd = byId("omx-app-band-add");
+    if (bandAdd) {
+      bandAdd.addEventListener("click", function () {
+        var scoring = state.doc.settings.scoring || (state.doc.settings.scoring = { bands: [] });
+        if (!Array.isArray(scoring.bands)) scoring.bands = [];
+        scoring.bands.push({ id: "band" + scoring.bands.length, label: "New band", min: 0 });
+        markConfigDirty();
+        render();
+      });
+    }
+
+    var codeAdd = byId("omx-app-code-add");
+    if (codeAdd) {
+      codeAdd.addEventListener("click", function () {
+        var codes = state.doc.settings.codes || (state.doc.settings.codes = {});
+        var key = "X";
+        var alphabet = "XYZKLNPQRS";
+        for (var a = 0; a < alphabet.length; a++) {
+          if (!hasOwn(codes, alphabet.charAt(a))) { key = alphabet.charAt(a); break; }
+        }
+        codes[key] = { label: "New code", num: 1, den: 1, counterLabel: "New code count", satisfiesEngagement: true };
+        markConfigDirty();
+        render();
+      });
+    }
+
+    var catAdd = byId("omx-app-category-add");
+    if (catAdd) {
+      catAdd.addEventListener("click", function () {
+        var name = window.prompt ? window.prompt("Category name") : null;
+        if (name) handlers.onAddCategory(name, todayIso());
+      });
+    }
+
+    var exportLink = byId("omx-app-export");
+    if (exportLink) {
+      exportLink.addEventListener("click", function (evt) {
+        if (state.exportPrimed) return;
+        evt.preventDefault();
+        handlers.onExport();
+      });
+    }
+
+    var importInput = byId("omx-app-import");
+    if (importInput) {
+      importInput.addEventListener("change", function () {
+        if (importInput.files && importInput.files.length) handlers.onImport(importInput.files[0]);
+      });
+    }
+  }
+
+  function wireLifecycle() {
+    window.addEventListener("focus", function () { pull(); });
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", function () {
+        if (document.visibilityState === "hidden") {
+          if (state.flushTimer) { clearTimeout(state.flushTimer); state.flushTimer = null; }
+          flush();
+        } else {
+          pull();
+        }
+      });
+    }
+
+    window.addEventListener("beforeunload", function () {
+      if (state.flushTimer) { clearTimeout(state.flushTimer); state.flushTimer = null; }
+      flush();
+    });
+
+    window.addEventListener("online", function () { pull(); });
+    window.addEventListener("offline", function () { setSync("offline", SYNC_MESSAGES.offline); render(); });
+
+    try {
+      var mq = window.matchMedia(DEFAULTS.mobileQuery);
+      var onChange = function () {
+        if (state.viewMode !== "auto") return;
+        if (state.view !== "grid" && state.view !== "mobile") return;
+        var next = autoView();
+        if (next !== state.view) { state.view = next; lsSet(KEYS.VIEW, next); render(); }
+      };
+      if (mq.addEventListener) mq.addEventListener("change", onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    } catch (e) { /* no matchMedia */ }
+  }
+
+  function boot() {
+    if (state.booted) return Promise.resolve();
+    state.booted = true;
+
+    state.viewMode = lsGet(KEYS.VIEWMODE, DEFAULTS.viewMode);
+    state.gridDays = Math.max(1, Math.trunc(Number(lsGet(KEYS.GRID_DAYS, DEFAULTS.gridDays)) || DEFAULTS.gridDays));
+    var storedView = lsGet(KEYS.VIEW, "");
+    state.view = storedView && VIEW_CONTAINERS[storedView] ? storedView : autoView();
+    loadQueue();
+
+    // Draw from the cache immediately so the tick surface is usable before the network lands.
+    adoptDoc(cachedDoc());
+    if (state.queue.length) setSync("dirty", SYNC_MESSAGES.dirty);
+
+    wireShell();
+    wireLifecycle();
+    render();
+
+    return initStorage().then(function () {
+      return pull();
+    }).catch(function (e) {
+      reportError(e);
+      render();
+    });
+  }
+
+  OM.app = {
+    boot: boot,
+    handlers: handlers,
+    state: state,
+    buildDerived: buildDerived,
+    todayIso: todayIso,
+    flush: flush,
+    pull: pull,
+    render: render,
+    VERSION: "1.0.0"
+  };
+
+  if (typeof document !== "undefined" && typeof document.addEventListener === "function") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", function () { boot(); });
+    } else {
+      boot();
+    }
+  }
+})();
+</script>
+</body>
+</html>
