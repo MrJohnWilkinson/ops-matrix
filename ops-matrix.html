@@ -2576,6 +2576,26 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
     }
   }
 
+  // THE one place an adapter acquires its fetch. An adapter stores the result on this._fetch and
+  // then calls it as a METHOD - self._fetch(url, opts) - which means the receiver at call time is
+  // the adapter, not the global object. The browser's fetch is a method of window and refuses a
+  // foreign receiver: it throws TypeError "Failed to execute 'fetch' on 'Window': Illegal
+  // invocation" before a single byte leaves the page. node's fetch ignores its receiver entirely,
+  // so every node suite passed while the deployed page could not reach the network at all -
+  // readAll() normalised the throw to ERR.NETWORK, served the empty local cache, and the UI
+  // reported success. Binding the global ONCE, here, makes the captured function callable
+  // standalone on every runtime, so the method-style call sites stay correct.
+  function resolveFetch(injected) {
+    if (injected) return injected;
+    if (typeof window !== "undefined" && window && typeof window.fetch === "function") {
+      return window.fetch.bind(window);
+    }
+    if (typeof globalThis !== "undefined" && globalThis && typeof globalThis.fetch === "function") {
+      return globalThis.fetch.bind(globalThis);
+    }
+    return fetch;
+  }
+
   function clone(value) {
     return value === undefined ? undefined : JSON.parse(JSON.stringify(value));
   }
@@ -3086,7 +3106,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   function GitHubAdapter(opts) {
     opts = opts || {};
     this._storage = opts.storage || localStorage;
-    this._fetch = opts.fetch || fetch;
+    this._fetch = resolveFetch(opts.fetch);
     this._maxSchemaVersion = opts.maxSchemaVersion === undefined ? SUPPORTED_SCHEMA_VERSION : opts.maxSchemaVersion;
     this._owner = null;
     this._name = null;
@@ -4059,7 +4079,7 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
   function SupabaseAdapter(opts) {
     opts = opts || {};
     this._storage = opts.storage || localStorage;
-    this._fetch = opts.fetch || fetch;
+    this._fetch = resolveFetch(opts.fetch);
     this._url = opts.url || SB_URL;
     this._anonKey = opts.anonKey || SB_ANON_KEY;
     this._session = null;
@@ -10590,7 +10610,16 @@ window.OpsMatrix = window.OpsMatrix || { views: {}, storage: {}, util: {} };
         setSync("dirty", SYNC_MESSAGES.dirty);
         scheduleFlush(DEFAULTS.debounceMs);
       } else if (adapterIsRemote()) {
-        setSync("synced", SYNC_MESSAGES.synced);
+        // Ask the RESPONSE what happened, not the adapter what it is capable of. readAll()
+        // normalises an unreachable backend into a local-cache result with meta.source "local"
+        // and does not reject, so keying this banner on adapterIsRemote() - a static capability -
+        // painted "Up to date" over a total sync failure and hid an empty document behind a green
+        // banner. A remote adapter that served the cache is offline, and says so.
+        if (isRemoteSource(res && res.meta)) {
+          setSync("synced", SYNC_MESSAGES.synced);
+        } else {
+          setSync("offline", SYNC_MESSAGES.offline);
+        }
       } else if (chooseKind() === "local" && !lsGet(KEYS.PAT, "")) {
         setSync("token-needed", SYNC_MESSAGES["token-needed"]);
       } else {
