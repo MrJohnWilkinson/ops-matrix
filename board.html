@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<title>Ops Matrix wall</title>
+<!-- The wall bundle. Opened as board.html#t={key}. No stylesheet, script or font is loaded from
+     anywhere: the build inlines all three sources below and the host allowlist rejects anything
+     that is not the pinned project. -->
+<style>
+/* Ops Matrix wall display - the second bundle's only stylesheet.
+
+   The wall is a different DEVICE, not a different screen: an always-on tablet or panel set up by
+   pasting one link, read-only by construction, not signed in as anybody, with no app chrome. It
+   ships its own bundle (dist/board.html) and therefore its own class vocabulary, policed by its
+   own three-way census in src/INTERFACES-WALL.md.
+
+   The rev11 wall design ships zero classes and zero custom properties - every value sits inline in
+   a JS object named T, dark only, sized with clamp(). This file is the translation of that object
+   into a token layer plus a class vocabulary, because this codebase is class-based and
+   lint-policed and cannot carry inline style.
+
+   Rules of this file, enforced by lint check 8 running against the wall bundle:
+   - Every colour literal lives between the two token markers below. Nothing else may name a colour.
+   - Every font-size is a var() of a font-size token. The clamp() lives inside the token, which is
+     how a wall keeps one type ramp across a 24-inch tablet and a 75-inch panel.
+   - No exclamation-important, no at-import.
+   - Every media query lives in ONE block at the foot of this file and is max-width only, so the
+     wide presentation - the one that matches the frozen design - cannot be touched by any of them.
+   - No letter-keyed code selector and no letter-keyed code custom property. The wall never draws
+     an outcome code at all, so neither shape has any business appearing here.
+
+   Per-owner prefixes: .omx-wall- (the shell, owned by board.template.html and board.js) and
+   .omx-tile- (one person's tile, owned by views-tile.js). Two root classes, .omx-wall and
+   .omx-tile, are declared as roots in the wall census.
+
+   TWO THINGS THIS FILE DELIBERATELY CANNOT DRAW, and they are the point of the whole surface:
+
+   1. Nothing ranks. There is no "leader" rule, no highest-score highlight, no target line drawn
+      across another person's tile. Every tile is styled identically and ordered by the board's
+      stored position, never by score.
+   2. Nothing renders shortfall. There is no track behind a bar, no "N of M", no "to go". A short
+      day looks small, never incomplete. The only bar in this file is a filled day rail with no
+      track behind it, which is why .omx-tile-day has a background and no container. */
+
+/* @tokens:start */
+:root {
+  color-scheme: dark;
+
+  /* T.canvas / T.surface - the wall is one flat sheet; tiles are separated by a hairline,
+     never by a card, because a card implies a container and a container implies a boundary
+     somebody has to justify. */
+  --omx-wall-canvas: #07090c;
+  --omx-wall-hairline: rgba(61, 77, 97, .4);
+
+  /* T.text / T.muted / T.quiet */
+  --omx-wall-text: #f3f6fa;
+  --omx-wall-muted: #a6b0bf;
+  --omx-wall-quiet: #8d97a6;
+  --omx-wall-faint: #6c7889;
+
+  /* T.accent - the day rail only. */
+  --omx-wall-rail: linear-gradient(90deg, #6374ef, #8a98ff);
+
+  /* T.green - completed items and the accumulation curve. */
+  --omx-wall-green: #53d69a;
+  --omx-wall-green-ink: #8aeec1;
+  --omx-wall-green-soft: rgba(83, 214, 154, .13);
+
+  /* Chip denominations. One colour per denomination - 25 / 100 / 500 / 1k / 5k / 25k - keyed by
+     SLUG rather than numeral so a denomination can be re-valued without renaming a stylesheet
+     key. Nothing under 25 is ever drawn, so there is no token below --omx-chip-lowest. */
+  --omx-chip-lowest: #2f8f63;
+  --omx-chip-low: #4a5a70;
+  --omx-chip-mid: #7a5cc4;
+  --omx-chip-high: #c98a3c;
+  --omx-chip-higher: #8d97a6;
+  --omx-chip-highest: #9c3b52;
+
+  /* A disc is a filled pill with an inner rim, so a stack of same-coloured discs still reads as
+     a stack rather than one long bar. */
+  --omx-chip-rim: inset 0 0 0 1px rgba(255, 255, 255, .22);
+
+  /* The type ramp. Every value carries its own clamp so the wall scales continuously between a
+     tablet and a panel with no breakpoint at all. A clamp cannot change a LAYOUT, which is what
+     the narrow form at the foot of this file exists to do - and it does nothing above 780px. */
+  --omx-fs-hero: clamp(74px, 10.6vw, 196px);
+  --omx-fs-heromid: clamp(58px, 8vw, 146px);
+  --omx-fs-herosmall: clamp(50px, 6.6vw, 120px);
+  --omx-fs-name: clamp(17px, 1.5vw, 29px);
+  --omx-fs-label: clamp(11px, .92vw, 17px);
+  --omx-fs-sub: clamp(22px, 1.95vw, 36px);
+  --omx-fs-sublabel: clamp(10px, .8vw, 15px);
+  --omx-fs-stale: clamp(19px, 1.7vw, 33px);
+  --omx-fs-cat: clamp(13px, 1.05vw, 20px);
+  --omx-fs-item: clamp(12px, .95vw, 18px);
+  --omx-fs-chip: clamp(10px, .8vw, 15px);
+  --omx-fs-banked: clamp(12px, .98vw, 18px);
+  --omx-fs-since: clamp(11px, .88vw, 16px);
+  --omx-fs-sync: clamp(11px, .9vw, 17px);
+  --omx-fs-foot: clamp(12px, .95vw, 18px);
+  --omx-fs-status: clamp(16px, 1.4vw, 26px);
+
+  /* Spacing, also clamped. Named by role, not by pixel count. */
+  --omx-wall-pad: clamp(22px, 2.1vw, 44px);
+  --omx-wall-gap: clamp(6px, .6vw, 11px);
+  --omx-wall-step: clamp(14px, 1.35vw, 26px);
+  --omx-wall-riser: clamp(18px, 1.7vw, 34px);
+  --omx-wall-chart: clamp(46px, 4vw, 76px);
+  --omx-wall-pill: 99px;
+}
+/* @tokens:end */
+
+/* ---------------------------------------------------------------------------------------------
+   Shell
+   --------------------------------------------------------------------------------------------- */
+
+html { background: var(--omx-wall-canvas); }
+
+body {
+  margin: 0;
+  background: var(--omx-wall-canvas);
+  color: var(--omx-wall-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+
+.omx-wall {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* The board is one flex row of equal tiles. Equal, not proportional: a tile's width must never
+   encode anything about the person on it. */
+.omx-wall-board {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: stretch;
+}
+
+.omx-wall-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: clamp(11px, 1.1vw, 20px) var(--omx-wall-pad);
+  border-top: 1px solid var(--omx-wall-hairline);
+}
+
+.omx-wall-foot-date {
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-foot);
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-wall-foot-note {
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-foot);
+}
+
+/* One status line covers loading, an unusable link and an empty board. It is a message, never a
+   control: the wall has no buttons because it can do nothing. */
+.omx-wall-status {
+  padding: var(--omx-wall-pad);
+  color: var(--omx-wall-muted);
+  font-size: var(--omx-fs-status);
+  line-height: 1.4;
+}
+
+.omx-wall-status[hidden] { display: none; }
+
+.omx-wall-status[data-state="error"] { color: var(--omx-wall-text); }
+
+/* ---------------------------------------------------------------------------------------------
+   One person's tile
+   --------------------------------------------------------------------------------------------- */
+
+.omx-tile {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+  padding: var(--omx-wall-pad);
+  border-left: 1px solid var(--omx-wall-hairline);
+}
+
+.omx-tile:first-child { border-left: none; }
+
+.omx-tile-name {
+  display: block;
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-name);
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1.2;
+  text-wrap: pretty;
+}
+
+/* Staleness is carried by colour at full opacity. Dimming the whole tile made the one
+   self-explaining state the least legible thing in the room. */
+.omx-tile-name[data-stale] { color: var(--omx-wall-muted); }
+
+.omx-tile-head {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 1.1vw, 22px) 0 0;
+}
+
+.omx-tile-label {
+  display: block;
+  margin-bottom: clamp(3px, .3vw, 7px);
+  color: var(--omx-wall-faint);
+  font-size: var(--omx-fs-label);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+/* The hero steps DOWN as more metrics are shown, so there is always exactly one hero and never
+   three numbers competing. The step is a data-driven attribute, not three classes, because the
+   count comes off the board record. */
+.omx-tile-hero {
+  font-size: var(--omx-fs-hero);
+  line-height: .92;
+  letter-spacing: -.055em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-tile-hero[data-metrics="2"] { font-size: var(--omx-fs-heromid); }
+.omx-tile-hero[data-metrics="3"] { font-size: var(--omx-fs-herosmall); }
+
+/* A filled rail with NO track behind it. The track is the shortfall, and shortfall is private. */
+.omx-tile-day {
+  display: block;
+  height: clamp(7px, .62vw, 12px);
+  margin-top: clamp(12px, 1.15vw, 22px);
+  border-radius: var(--omx-wall-pill);
+  background: var(--omx-wall-rail);
+}
+
+.omx-tile-subs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(16px, 1.6vw, 34px);
+  margin-top: var(--omx-wall-step);
+}
+
+.omx-tile-sub {
+  display: flex;
+  flex-direction: column;
+}
+
+.omx-tile-sub-label {
+  color: var(--omx-wall-faint);
+  font-size: var(--omx-fs-sublabel);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.omx-tile-sub-value {
+  color: var(--omx-wall-muted);
+  font-size: var(--omx-fs-sub);
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+/* A stale person shows when they were last seen and no numeral at all. A zero would be a claim
+   about a day nobody reported. */
+.omx-tile-stale {
+  display: block;
+  padding: var(--omx-wall-step) 0 0;
+  color: var(--omx-wall-muted);
+  font-size: var(--omx-fs-stale);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Categories - NEVER truncated
+   --------------------------------------------------------------------------------------------- */
+
+.omx-tile-cats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--omx-wall-gap);
+  padding: var(--omx-wall-riser) 0 0;
+}
+
+.omx-tile-cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.omx-tile-cat-name {
+  min-width: 0;
+  color: var(--omx-wall-muted);
+  font-size: var(--omx-fs-cat);
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.omx-tile-cat-score {
+  flex: 0 0 auto;
+  color: var(--omx-wall-text);
+  font-size: var(--omx-fs-cat);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------------------------
+   Items - illustrative, so they DO keep an overflow chip
+   --------------------------------------------------------------------------------------------- */
+
+.omx-tile-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(5px, .5vw, 9px);
+  padding: var(--omx-wall-riser) 0 0;
+}
+
+.omx-tile-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: clamp(4px, .42vw, 8px) clamp(9px, .85vw, 15px);
+  border-radius: var(--omx-wall-pill);
+  background: var(--omx-wall-green-soft);
+  color: var(--omx-wall-green-ink);
+  font-size: var(--omx-fs-item);
+  font-weight: 600;
+}
+
+.omx-tile-item-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--omx-wall-green);
+}
+
+.omx-tile-item-more {
+  display: inline-flex;
+  align-items: center;
+  padding: clamp(4px, .42vw, 8px) clamp(9px, .85vw, 15px);
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-item);
+}
+
+/* ---------------------------------------------------------------------------------------------
+   The bottom-pinned block
+
+   Every row in here has a height that does not depend on string width. "Since 14 Apr 2026" is a
+   few pixels wider than "Since 1 Jan 2026", and letting that wrap lifted one tile's chart clear
+   of its neighbours' in an earlier revision. Each row is its own column line with a reserved
+   minimum height, so a longer string can never shift the chart above it.
+   --------------------------------------------------------------------------------------------- */
+
+.omx-tile-foot {
+  margin-top: auto;
+  padding-top: clamp(20px, 1.9vw, 38px);
+}
+
+/* SCALED ACROSS THE BOARD. One ceiling is taken over every person's accumulation and handed to
+   every tile, so an earlier anchor sits higher at the left edge and a larger accumulation ends
+   higher at the right - the tiles are directly comparable. That is a settled ruling.
+
+   It is not a ranking device and it does not weaken the rule above: no tile is highlighted as the
+   tallest, no rank is printed, no tile is ordered by number, and no target line is drawn across
+   anybody's tile. The Since line under each curve states the span it covers, which is what keeps
+   the comparison honest.
+
+   The box is emitted even when a person has no published day in the window, and in that case it
+   carries no line at all. It keeps its height so the rows pinned below it still line up across
+   tiles - the absence is the point, not a gap to be filled with a plausible shape. */
+.omx-tile-spark {
+  display: block;
+  width: 100%;
+  height: var(--omx-wall-chart);
+  overflow: visible;
+}
+
+.omx-tile-spark-line {
+  fill: none;
+  stroke: var(--omx-wall-green);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.omx-tile-chips {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(9px, .9vw, 17px);
+  height: var(--omx-wall-chart);
+  overflow: hidden;
+}
+
+.omx-tile-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.omx-tile-chip-disc {
+  display: block;
+  flex: 0 0 auto;
+  width: clamp(28px, 2.5vw, 48px);
+  height: clamp(8px, .72vw, 14px);
+  margin-bottom: clamp(-4px, -.28vw, -2px);
+  border-radius: var(--omx-wall-pill);
+  box-shadow: var(--omx-chip-rim);
+}
+
+.omx-tile-chip-disc[data-chip="lowest"] { background: var(--omx-chip-lowest); }
+.omx-tile-chip-disc[data-chip="low"] { background: var(--omx-chip-low); }
+.omx-tile-chip-disc[data-chip="mid"] { background: var(--omx-chip-mid); }
+.omx-tile-chip-disc[data-chip="high"] { background: var(--omx-chip-high); }
+.omx-tile-chip-disc[data-chip="higher"] { background: var(--omx-chip-higher); }
+.omx-tile-chip-disc[data-chip="highest"] { background: var(--omx-chip-highest); }
+
+.omx-tile-chip-label {
+  margin-top: clamp(7px, .6vw, 11px);
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-chip);
+  font-weight: 700;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.omx-tile-banked {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, .2vw, 4px);
+  margin-top: clamp(9px, .85vw, 16px);
+}
+
+.omx-tile-banked-line {
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-banked);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Anchors differ per person, so every tile states its own span rather than implying a common one.
+   Its own line, never appended to the banked line, so neither row can wrap. */
+.omx-tile-banked-since {
+  color: var(--omx-wall-faint);
+  font-size: var(--omx-fs-since);
+  line-height: 1.4;
+}
+
+/* The sync line is ALWAYS in the flow, even when empty, so a tile that has one and a tile that
+   does not still line up. This is the reserved row the bottom-pinned block depends on. */
+.omx-tile-sync {
+  display: block;
+  min-height: clamp(17px, 1.35vw, 26px);
+  margin-top: clamp(7px, .62vw, 12px);
+  color: var(--omx-wall-quiet);
+  font-size: var(--omx-fs-sync);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------------------------------------
+   THE NARROW FORM - the only media queries in this file
+
+   The clamped type ramp above scales the wall continuously from a 24-inch tablet to a 75-inch
+   panel, and between those sizes it needs no breakpoint at all. What a clamp cannot do is change
+   the LAYOUT, and below about a tablet's width the four-across row stops being a layout: at 400px
+   each tile is 60-90px wide, a category name collides with its own value, the sync line breaks
+   into four lines and the chip row runs off the side of the screen.
+
+   The frozen design is equally media-query-free - it was authored as a fixed large-format display
+   and never answers the narrow case. These rules answer it, and they answer ONLY it. Every one of
+   them sits inside a max-width query, so the wide presentation, which is the one that matches the
+   design, is exactly what it was.
+   --------------------------------------------------------------------------------------------- */
+
+@media (max-width: 780px) {
+  /* One tile per row. Still EQUAL - a tile's size must never encode anything about the person on
+     it - it is just that equal now means full width. Order is still the board's stored order. */
+  .omx-wall-board {
+    flex-direction: column;
+  }
+
+  /* Height follows content in a column; a shared flex basis would squeeze every tile to a quarter
+     of the viewport and spill its own contents. */
+  .omx-tile {
+    flex: 0 0 auto;
+    border-left: none;
+    border-top: 1px solid var(--omx-wall-hairline);
+  }
+
+  .omx-tile:first-child {
+    border-top: none;
+  }
+
+  /* A name wraps at a word boundary. It is never squeezed to the point of losing letters: a
+     half-printed name is a wrong name. */
+  .omx-tile-name {
+    overflow-wrap: break-word;
+  }
+
+  /* The value drops to its own line rather than landing on top of the label. "Connect 45"
+     collapsing into "Conne45" was the shrink of a no-wrap row, not a font problem. */
+  .omx-tile-cat {
+    flex-wrap: wrap;
+  }
+
+  .omx-tile-cat-name {
+    overflow-wrap: break-word;
+  }
+
+  /* The chip row wraps INSIDE its own container instead of running past the edge of the screen.
+     Its fixed height was what forced the overflow; the reserved minimum keeps the rows pinned
+     below it lining up, and every denomination stays on screen. */
+  .omx-tile-chips {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--omx-wall-chart);
+    overflow: visible;
+  }
+
+  .omx-wall-foot {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Padding is the last thing to give, after the layout has already stacked. Named tokens, so the
+     narrow form stays one edit rather than a dozen. */
+  :root {
+    --omx-wall-pad: 18px;
+    --omx-wall-chart: 52px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="omx-wall">
+  <div class="omx-wall-board"></div>
+  <p class="omx-wall-status" data-state="loading">Loading the board.</p>
+  <footer class="omx-wall-foot">
+    <span class="omx-wall-foot-date"></span>
+    <span class="omx-wall-foot-note">Read-only display &middot; not signed in</span>
+  </footer>
+</div>
+
+<script>window.OpsMatrix = window.OpsMatrix || { wall: {} };</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { wall: {} };
+
+/*
+ * The wall tile - PURE RENDERING, and nothing else.
+ *
+ * This file builds one person's tile out of one person object and returns the node. It fetches
+ * nothing, stores nothing, reads no engine and computes no score. Every number it draws arrived
+ * from the get_board RPC, INCLUDING the viewer's own: there is no wall-side scoring engine and no
+ * special case for "you". An earlier revision of this design carried a hand-copied fixture tile
+ * for the account holder that had to be refreshed by hand whenever a rule changed. That is a
+ * defect, not a shortcut, and it is not reintroduced here.
+ *
+ * The filename matters. Lint check 5 forbids the fetch call in ANY views-*.js, so the fetcher is
+ * board.js and this file is the renderer. The split is structural, not stylistic.
+ *
+ * THE DOCTRINE, which is the whole reason the wall is its own surface:
+ *
+ *   NOTHING RANKS. Tiles are drawn in the board's stored order and styled identically. No highest
+ *   score is highlighted. No target line is drawn across anybody's tile - 85 is the account
+ *   holder's own goal, granted to nobody. The wall exists so that actions are witnessed, not so
+ *   that people are measured against each other.
+ *
+ *   SHORTFALL IS PRIVATE, and the wall is the most public surface there is. No denominator, no
+ *   track behind the day rail, no count, no "to go", no "N of M". A short day looks small, never
+ *   incomplete.
+ *
+ *   A STALE PERSON SHOWS A LAST-SYNCED LINE AND NO NUMERAL. Never a zero. A zero is a claim about
+ *   a day nobody reported, and it is the one number on this wall that would be a lie. The SAME
+ *   rule governs the curve: a person whose series is entirely null is drawn with NO CURVE AT ALL,
+ *   because a confident rising line beside a withheld number is that same lie in another medium.
+ *
+ *   THE ACCUMULATION CURVE IS SCALED ACROSS THE BOARD, not inside each tile. An earlier anchor and
+ *   a larger accumulation give a taller line, and the tiles are directly comparable. That is a
+ *   settled ruling and it does not touch the rule above it: nothing is highlighted as highest,
+ *   no rank is printed, and no target line is drawn on anybody's tile.
+ *
+ *   CATEGORIES ARE NEVER TRUNCATED. cats[] arrives complete from the server and is drawn complete.
+ *   A category with a zero denominator arrives as null and draws an em-dash - never the string
+ *   "null", never a zero. Items ARE illustrative, so they keep their overflow chip after five.
+ *
+ *   SCORES ARE BARE POINTS. 78, never 78 with a percent sign. The only percent on this surface is
+ *   a CSS width, which is a style value and never a rendered string.
+ *
+ * FORMATTING IS THIS FILE'S JOB. The server sends machine values - since as an ISO date, synced_at
+ * as a timestamptz - and never formats for a locale. "1 Jan 2026" and "Synced 4 minutes ago" are
+ * produced here, against the display's own clock.
+ */
+
+(function () {
+  "use strict";
+
+  // THE canonical element constructor, byte-identical in every file that builds DOM. A second,
+  // subtly different el() is how two screens drift apart while both still look right in isolation.
+  // The second argument is either a class string or an options object carrying className, text and
+  // attrs; the third argument is the text, and is read only in the class-string form.
+  function el(tag, opts, text) {
+    var node = document.createElement(tag);
+    var spec = (opts && typeof opts === "object") ? opts : { className: opts, text: text };
+    if (spec.className) node.className = spec.className;
+    if (spec.text !== undefined && spec.text !== null) node.textContent = spec.text;
+    if (spec.attrs) {
+      for (var key in spec.attrs) {
+        if (Object.prototype.hasOwnProperty.call(spec.attrs, key)) node.setAttribute(key, spec.attrs[key]);
+      }
+    }
+    return node;
+  }
+
+  // SVG nodes carry their class through classList rather than a class attribute, because
+  // setAttribute("class", x) is invisible to the census scanner and a class the scanner cannot
+  // see is a class nobody can prove is owned.
+  var SVG_NS = "http://www.w3.org/2000/svg";
+
+  function svgEl(tag) {
+    return document.createElementNS(SVG_NS, tag);
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Levels
+  // -------------------------------------------------------------------------------------------
+
+  // granted and display cross the wire as STRINGS and are both present on every person. The
+  // effective level is the LOWER of the two BY POSITION in this list, which is exactly what the
+  // server already applied - recomputing it here is a redundancy check, not a second policy.
+  var LEVELS = ["score", "categories", "items"];
+
+  function levelIndex(name) {
+    var i = LEVELS.indexOf(name);
+    return i === -1 ? 0 : i;
+  }
+
+  function effectiveLevel(person) {
+    var g = levelIndex(person.granted);
+    var d = levelIndex(person.display);
+    return LEVELS[g < d ? g : d];
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Number and date formatting - the wall's own job, because the server never formats
+  // -------------------------------------------------------------------------------------------
+
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var EM_DASH = "—";
+  var MULTIPLY = "×";
+  var MIDDOT = "·";
+
+  function commas(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  // A bare points figure. Nulls never reach here - a null is a stale tile, handled upstream.
+  function points(value) {
+    return String(Math.round(value));
+  }
+
+  // "2026-01-01" becomes "1 Jan 2026". Parsed field by field rather than through Date, because a
+  // bare ISO date string is parsed as UTC and would slip a day west of Greenwich.
+  function formatSince(iso) {
+    if (!iso) return "";
+    var parts = String(iso).slice(0, 10).split("-");
+    if (parts.length !== 3) return String(iso);
+    var year = parseInt(parts[0], 10);
+    var month = parseInt(parts[1], 10);
+    var day = parseInt(parts[2], 10);
+    if (!isFinite(year) || !isFinite(month) || !isFinite(day)) return String(iso);
+    return day + " " + MONTHS[month - 1] + " " + year;
+  }
+
+  // A tz arrives as an IANA identifier - "Australia/Brisbane", "Europe/London". The room reads the
+  // city, not the database key, so the region is dropped and the underscores in a name like
+  // "America/New_York" become spaces. Another formatting job the server correctly refused to do.
+  function tzLabel(tz) {
+    var text = String(tz || "");
+    var slash = text.lastIndexOf("/");
+    if (slash !== -1) text = text.slice(slash + 1);
+    return text.replace(/_/g, " ");
+  }
+
+  function clock(date) {
+    var h = date.getHours();
+    var m = date.getMinutes();
+    var suffix = h < 12 ? "am" : "pm";
+    var h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return h12 + ":" + (m < 10 ? "0" : "") + m + suffix;
+  }
+
+  // Recent syncs read as an elapsed span, because on a wall the useful fact is how fresh the
+  // number is. Anything older than a day reads as a wall-clock moment instead, because "31 hours
+  // ago" is arithmetic the room should not have to do.
+  function formatSynced(stamp, now) {
+    if (!stamp) return "";
+    var then = new Date(stamp);
+    if (isNaN(then.getTime())) return "";
+    var mins = Math.floor((now.getTime() - then.getTime()) / 60000);
+    if (mins < 1) return "Synced just now";
+    if (mins < 60) return "Synced " + mins + (mins === 1 ? " minute ago" : " minutes ago");
+    var hours = Math.floor(mins / 60);
+    if (hours < 24) return "Synced " + hours + (hours === 1 ? " hour ago" : " hours ago");
+    return "Last synced " + DAYS[then.getDay()] + " " + clock(then);
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Chips - one colour per denomination, nothing under 25
+  // -------------------------------------------------------------------------------------------
+
+  // The SLUG, not the numeral, is what the stylesheet keys on, so a denomination can be re-valued
+  // without renaming a stylesheet key.
+  var CHIPS = [
+    { value: 25000, label: "25k", slug: "highest" },
+    { value: 5000, label: "5k", slug: "higher" },
+    { value: 1000, label: "1k", slug: "high" },
+    { value: 500, label: "500", slug: "mid" },
+    { value: 100, label: "100", slug: "low" },
+    { value: 25, label: "25", slug: "lowest" }
+  ];
+
+  // The cap on how many discs are DRAWN in one stack. It is not a cap on how many denominations
+  // appear: every denomination present in the greedy fill gets its own stack, and the count is
+  // carried in the label when it exceeds the drawable stack. A total of 19,640 therefore renders
+  // five stacks - 5k, 1k, 500, 100 and 25 - while 24 renders nothing at all, because nothing
+  // under 25 has earned a chip.
+  var CHIP_STACK_CAP = 4;
+
+  function chipsFor(total) {
+    var left = typeof total === "number" && isFinite(total) ? Math.floor(total) : 0;
+    var out = [];
+    for (var i = 0; i < CHIPS.length; i++) {
+      var c = CHIPS[i];
+      var n = Math.floor(left / c.value);
+      if (n > 0) {
+        out.push({
+          slug: c.slug,
+          label: n > 1 ? n + " " + MULTIPLY + " " + c.label : c.label,
+          discs: n < CHIP_STACK_CAP ? n : CHIP_STACK_CAP
+        });
+        left -= n * c.value;
+      }
+    }
+    return out;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // The accumulation curve - REAL SERIES, on a BOARD-WIDE SHARED SCALE
+  // -------------------------------------------------------------------------------------------
+
+  // WHAT THE SERVER SENDS. Every person carries series: exactly 28 entries, oldest first, one per
+  // day for the trailing 28 days ending YESTERDAY, each of the shape { d: ISO date, score: number
+  // or null }. A day with no published row arrives as null and NEVER as a 0, because a 0 is a
+  // claim about a day nobody reported. The series is assembled server-side out of already
+  // published rows and is gated by exactly the grant that gates the score.
+  //
+  // WHAT THIS FILE USED TO DO, recorded because the shape of the defect is the reason for the
+  // rule: it drew the curve from a hash of the person's NAME - a char-code sum mod 997 fed into a
+  // fixed ramp plus two sine wobbles. It consumed no score data at all, so every tile rose from
+  // the same floor to the same ceiling and anchor, magnitude and trend were conveyed by nothing.
+  // The hash is deleted outright and is NOT kept as a fallback: a fallback that draws a plausible
+  // curve when the data is missing is indistinguishable from the bug it replaced.
+
+  function isNum(value) {
+    return typeof value === "number" && isFinite(value);
+  }
+
+  // THE SCALE IS BOARD-WIDE. This is a settled ruling, not an open question: an earlier anchor and
+  // a larger accumulation give a taller line, and the tiles are directly comparable. It is not a
+  // ranking device and it does not touch the no-ranking law - no tile is highlighted as the
+  // highest, no rank is printed anywhere, no tile is ordered by number, and no target line is
+  // drawn across another person's tile. All of those stay forbidden. The per-tile Since line is
+  // what keeps the comparison honest, because it states the span each curve covers.
+
+  // The running accumulation across the window. Every plotted value is a REAL total: what this
+  // person had accumulated by the end of that day. The left-hand end is banked minus the window's
+  // own sum, which is the total they had already banked when the window opened - which is exactly
+  // how an earlier anchor shows up as height. A day that arrived null contributes nothing and the
+  // line runs flat across it, because nothing was reported and nothing was accumulated.
+  //
+  // Returns null - NOT an empty array and not a row of zeros - when the person has no published
+  // day in the window at all. That null is what withholds the curve.
+  function accumulationOf(person) {
+    var series = person && person.series;
+    if (Object.prototype.toString.call(series) !== "[object Array]" || series.length < 2) return null;
+
+    var deltas = [];
+    var reported = 0;
+    var sum = 0;
+    for (var i = 0; i < series.length; i++) {
+      var entry = series[i];
+      var day = (entry && isNum(entry.score)) ? entry.score : null;
+      if (day === null) {
+        deltas.push(0);
+        continue;
+      }
+      reported++;
+      sum += day;
+      deltas.push(day);
+    }
+    if (!reported) return null;
+
+    var base = isNum(person.banked) ? person.banked - sum : 0;
+    if (base < 0) base = 0;
+
+    var values = [];
+    var running = base;
+    for (var j = 0; j < deltas.length; j++) {
+      running += deltas[j];
+      values.push(running);
+    }
+    return values;
+  }
+
+  // The board's single ceiling: the largest accumulation anywhere on the board. Computed ONCE over
+  // the whole people list by board.js and handed to every tile through opts, so that one scale is
+  // shared and no tile can quietly normalise itself.
+  function sparkScale(people) {
+    var list = (Object.prototype.toString.call(people) === "[object Array]") ? people : [];
+    var top = 0;
+    for (var i = 0; i < list.length; i++) {
+      var values = accumulationOf(list[i]);
+      if (!values) continue;
+      for (var j = 0; j < values.length; j++) {
+        if (values[j] > top) top = values[j];
+      }
+    }
+    return top;
+  }
+
+  // Zero is the baseline, so height reads as amount rather than as a cropped difference.
+  function sparkPathOf(values, top) {
+    if (!values || values.length < 2) return "";
+    if (!isNum(top) || top <= 0) return "";
+    var d = "";
+    for (var i = 0; i < values.length; i++) {
+      var x = (i / (values.length - 1)) * 100;
+      var y = 33 - (values[i] / top) * 32;
+      if (y < 1) y = 1;
+      if (y > 33) y = 33;
+      d += (i === 0 ? "M " : " L ") + x.toFixed(2) + " " + y.toFixed(2);
+    }
+    return d;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // The metric row
+  // -------------------------------------------------------------------------------------------
+
+  // Precedence is fixed - today, then 7-day, then 28-day - so the FIRST selected metric is always
+  // the hero and the rest are small supporting figures. One hero, never three competing numbers.
+  var METRICS = [
+    { key: "score", label: "Today" },
+    { key: "trail7", label: "7-day" },
+    { key: "trail28", label: "28-day" }
+  ];
+
+  function metricsFor(wanted) {
+    var chosen = [];
+    for (var i = 0; i < METRICS.length; i++) {
+      if (!wanted || wanted.indexOf(METRICS[i].key) !== -1) chosen.push(METRICS[i]);
+    }
+    if (!chosen.length) chosen.push(METRICS[0]);
+    return chosen;
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // The tile
+  // -------------------------------------------------------------------------------------------
+
+  function renderHead(person, metrics, node) {
+    var head = el("div", { className: "omx-tile-head" });
+    var hero = metrics[0];
+    var value = person[hero.key];
+
+    head.appendChild(el("span", { className: "omx-tile-label", text: hero.label }));
+
+    var heroNode = el("strong", {
+      className: "omx-tile-hero",
+      text: points(value),
+      attrs: { "data-metrics": String(metrics.length) }
+    });
+    head.appendChild(heroNode);
+
+    // A FILLED rail with no track behind it. The track is the shortfall, and shortfall is private.
+    var rail = el("span", { className: "omx-tile-day" });
+    rail.style.width = Math.max(0, Math.min(100, value)) + "%";
+    head.appendChild(rail);
+
+    if (metrics.length > 1) {
+      var subs = el("div", { className: "omx-tile-subs" });
+      for (var i = 1; i < metrics.length; i++) {
+        var m = metrics[i];
+        var raw = person[m.key];
+        var sub = el("div", { className: "omx-tile-sub" });
+        sub.appendChild(el("span", { className: "omx-tile-sub-label", text: m.label }));
+        sub.appendChild(el("span", {
+          className: "omx-tile-sub-value",
+          text: raw === null || raw === undefined ? EM_DASH : points(raw)
+        }));
+        subs.appendChild(sub);
+      }
+      head.appendChild(subs);
+    }
+
+    node.appendChild(head);
+  }
+
+  function renderCats(person, node) {
+    var cats = person.cats || [];
+    if (!cats.length) return;
+    // COMPLETE. No slice, no cap, no overflow chip: a category list is the whole shape of what a
+    // person tracks, and cutting it misstates that shape on the most public surface there is.
+    var wrap = el("div", { className: "omx-tile-cats" });
+    for (var i = 0; i < cats.length; i++) {
+      var cat = cats[i];
+      var row = el("div", { className: "omx-tile-cat" });
+      row.appendChild(el("span", { className: "omx-tile-cat-name", text: String(cat.name) }));
+      row.appendChild(el("span", {
+        className: "omx-tile-cat-score",
+        text: cat.score === null || cat.score === undefined ? EM_DASH : points(cat.score)
+      }));
+      wrap.appendChild(row);
+    }
+    node.appendChild(wrap);
+  }
+
+  var ITEM_LIMIT = 5;
+
+  function renderItems(person, node) {
+    var items = person.items || [];
+    if (!items.length) return;
+    // Items ARE illustrative, so they keep their overflow chip. The list arrived already gated
+    // server-side; this cap is presentation only.
+    var shown = items.length > ITEM_LIMIT ? items.slice(0, ITEM_LIMIT) : items;
+    var wrap = el("div", { className: "omx-tile-items" });
+    for (var i = 0; i < shown.length; i++) {
+      var chip = el("span", { className: "omx-tile-item" });
+      chip.appendChild(el("span", { className: "omx-tile-item-dot", attrs: { "aria-hidden": "true" } }));
+      chip.appendChild(document.createTextNode(String(shown[i].name)));
+      wrap.appendChild(chip);
+    }
+    if (items.length > shown.length) {
+      wrap.appendChild(el("span", {
+        className: "omx-tile-item-more",
+        text: "+" + (items.length - shown.length) + " more"
+      }));
+    }
+    node.appendChild(wrap);
+  }
+
+  // A person whose series is entirely null gets NO CURVE. The chart area is still emitted, so that
+  // the rows pinned below it keep lining up across tiles, but it carries no line at all. This is
+  // the same honesty the numeral already has: a stale tile that withholds its number and then
+  // draws a confident rising curve beside it is telling the same lie in another medium, on the
+  // most public surface there is.
+  function renderSpark(person, opts, node) {
+    var svg = svgEl("svg");
+    svg.classList.add("omx-tile-spark");
+    svg.setAttribute("viewBox", "0 0 100 34");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.setAttribute("aria-hidden", "true");
+
+    var d = sparkPathOf(accumulationOf(person), opts.sparkTop);
+    if (d) {
+      var path = svgEl("path");
+      path.classList.add("omx-tile-spark-line");
+      path.setAttribute("d", d);
+      path.setAttribute("vector-effect", "non-scaling-stroke");
+      svg.appendChild(path);
+    }
+    node.appendChild(svg);
+  }
+
+  function renderChips(person, node) {
+    var chips = chipsFor(person.banked);
+    if (!chips.length) return;
+    var wrap = el("div", { className: "omx-tile-chips" });
+    for (var i = 0; i < chips.length; i++) {
+      var chip = chips[i];
+      var stack = el("div", { className: "omx-tile-chip" });
+      for (var d = 0; d < chip.discs; d++) {
+        stack.appendChild(el("span", {
+          className: "omx-tile-chip-disc",
+          attrs: { "data-chip": chip.slug, "aria-hidden": "true" }
+        }));
+      }
+      stack.appendChild(el("span", { className: "omx-tile-chip-label", text: chip.label }));
+      wrap.appendChild(stack);
+    }
+    node.appendChild(wrap);
+  }
+
+  function renderFoot(person, opts, node) {
+    var foot = el("div", { className: "omx-tile-foot" });
+    var accumulation = opts.accumulation || "line";
+
+    if (accumulation === "line" || accumulation === "both") renderSpark(person, opts, foot);
+    if (accumulation === "chips" || accumulation === "both") renderChips(person, foot);
+
+    if (accumulation !== "none" && typeof person.banked === "number") {
+      var banked = el("div", { className: "omx-tile-banked" });
+      banked.appendChild(el("span", {
+        className: "omx-tile-banked-line",
+        text: commas(person.banked) + " banked"
+      }));
+      // Anchors differ per person, so every tile states its own span. Its own row, never appended
+      // to the line above, because a wrapped row inside a bottom-pinned block lifts the chart.
+      var sinceText = person.since ? "Since " + formatSince(person.since) : "";
+      banked.appendChild(el("span", {
+        className: "omx-tile-banked-since",
+        text: sinceText
+      }));
+      foot.appendChild(banked);
+    }
+
+    // ALWAYS present, even when empty, so a tile that carries a sync line and a tile that does not
+    // still line up along the bottom.
+    var stale = person.score === null || person.score === undefined;
+    var synced = formatSynced(person.synced_at, opts.now);
+    var line = "";
+    if (!stale && synced) {
+      // A person whose day rolls at a different midnight says so, because their number covers a
+      // different span of hours from every other tile on the wall.
+      line = opts.tz && person.tz && person.tz !== opts.tz
+        ? synced + " " + MIDDOT + " " + tzLabel(person.tz) + " day"
+        : synced;
+    }
+    foot.appendChild(el("span", { className: "omx-tile-sync", text: line }));
+
+    node.appendChild(foot);
+  }
+
+  function renderTile(person, opts) {
+    opts = opts || {};
+    if (!opts.now) opts.now = new Date();
+    // The board-wide ceiling arrives from board.js, which is the only caller that can see the
+    // whole board. Absent it there is no shared scale to draw against, so the curve is withheld
+    // rather than normalised per tile: failing closed leaves a blank chart, and a blank chart is
+    // honest where a self-scaled one would silently disagree with the tile beside it.
+    if (!isNum(opts.sparkTop)) opts.sparkTop = 0;
+    var metrics = metricsFor(opts.metrics);
+    var level = effectiveLevel(person);
+    var stale = person.score === null || person.score === undefined;
+
+    var tile = el("article", { className: "omx-tile" });
+
+    var name = el("span", { className: "omx-tile-name", text: String(person.name) });
+    if (stale) name.setAttribute("data-stale", "true");
+    tile.appendChild(name);
+
+    if (stale) {
+      // NEVER a zero here. The last-synced line is the whole of what a stale tile may claim.
+      var synced = formatSynced(person.synced_at, opts.now);
+      tile.appendChild(el("span", {
+        className: "omx-tile-stale",
+        text: synced || "Not yet reported"
+      }));
+    } else {
+      renderHead(person, metrics, tile);
+      if (level !== "score") renderCats(person, tile);
+      if (level === "items") renderItems(person, tile);
+    }
+
+    renderFoot(person, opts, tile);
+    return tile;
+  }
+
+  window.OpsMatrix.wall = window.OpsMatrix.wall || {};
+  window.OpsMatrix.wall.renderTile = renderTile;
+  // Exported for the board fetcher's date line only. Formatting lives here, in the renderer.
+  window.OpsMatrix.wall.formatSince = formatSince;
+  // The board-wide sparkline ceiling. board.js is the only caller that holds the whole people
+  // list, so it computes this once and passes it to every tile - which is what makes the scale
+  // shared rather than per tile. The arithmetic stays here in the renderer, because a chart
+  // ceiling is a presentation value and the fetcher computes nothing.
+  window.OpsMatrix.wall.sparkScale = sparkScale;
+})();
+</script>
+<script>
+window.OpsMatrix = window.OpsMatrix || { wall: {} };
+
+/*
+ * The board fetcher - the wall's ONLY connection to the world.
+ *
+ * WHY THIS FILE IS NOT CALLED views-board.js. Lint check 5 forbids the fetch call in ANY file
+ * named views-*.js, and the wall genuinely has to fetch. So the split is structural: this file
+ * fetches and mounts, src/views-tile.js renders and touches nothing. Renaming either file breaks
+ * the rule the names exist to satisfy.
+ *
+ * WHAT THE WALL IS. A different DEVICE, not a different screen: an always-on tablet or panel set
+ * up by pasting one link, read-only by construction, not signed in as anybody, with no app chrome
+ * at all. It cannot tick, edit or delete, so it carries no control of any kind.
+ *
+ * WHAT THIS BUNDLE DOES NOT CONTAIN, and the list is the specification:
+ *   NO engine.     The wall computes no score. Not one, not even the viewer's own.
+ *   NO storage.    No adapter, no queue, no cache, no localStorage. Nothing is written anywhere.
+ *   NO app.        No router, no views beyond the tile, no settings, no state machine.
+ *   NO auth.       Nobody signs in. The publishable anon key below is a project identifier that
+ *                  is public by design, not a credential belonging to a person. The service_role
+ *                  key never appears in this or any other file.
+ *   NO polling.    One request, on load. A wall that re-requests forever is a wall that keeps a
+ *                  database awake for a room nobody is in; the display is refreshed by reloading
+ *                  it, which is the only interaction this device has.
+ *
+ * THE WALL COMPUTES NOTHING. Every number on screen - including the viewer's own - comes out of
+ * the single get_board RPC. There is no wall-side scoring engine and no special case for "you".
+ * An earlier revision of this design carried a hand-copied fixture tile for the account holder;
+ * it had to be refreshed by hand whenever a rule or a seed changed, and it silently disagreed
+ * with the app whenever somebody forgot. There is no such tile here and there must never be one.
+ *
+ * WHAT THE SERVER SENDS, per person: name, score, trail7, trail28, banked, since, synced_at,
+ * granted, display, tz, cats[], items[], series[]. granted and display are level STRINGS and are
+ * present on every person. score is null for a stale person - never a zero. cats[] arrives
+ * COMPLETE and is never sliced. items[] is already gated server-side. since is an ISO date and
+ * synced_at a timestamptz: MACHINE values, because the server never formats for a locale. This
+ * bundle does that, in views-tile.js.
+ *
+ * series[] is exactly 28 entries, oldest first, one per day for the trailing 28 days ending
+ * YESTERDAY, each { d, score }. A day with no published row is NULL, never a 0 - a 0 would be a
+ * claim about a day nobody reported. A person with no published rows at all arrives as 28 nulls
+ * and is drawn with no curve whatsoever. The series is selected from already-published rows and
+ * is gated by the same grant that gates the score, so a viewer who may not see one may not see
+ * the other. The database still computes no score and neither does this file.
+ *
+ * ONE FILTER ENCODER EXISTS IN THIS CODEBASE - sbFilterValue, exported from storage.js - and this
+ * file does not carry a second one, because it does not need one: the board key travels in a JSON
+ * request BODY to an RPC, never in a PostgREST filter and never in a query string.
+ */
+
+(function () {
+  "use strict";
+
+  // The project URL and the publishable ("anon") key are PUBLIC by design: the key carries the
+  // anon role only, and anon can reach EXACTLY ONE object in this project - public.get_board.
+  // Every table is deny-all to anon, so a leaked wall link cannot reach an entry or a config row.
+  var SB_URL = "https://iqpgwghkglromogsbayw.supabase.co";
+  var SB_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlxcGd3Z2hrZ2xyb21vZ3NiYXl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcxMzgyODgsImV4cCI6MjEwMjcxNDI4OH0.1vyMW41RrBwCph6ddhPEc0NponL2W7APmwZ3X4KFzcc";
+  var RPC_PATH = "/rest/v1/rpc/get_board";
+
+  var WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var MONTHS = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  // -------------------------------------------------------------------------------------------
+  // The link
+  // -------------------------------------------------------------------------------------------
+
+  // The key lives in the URL FRAGMENT, not the query string: a fragment is never sent to a server
+  // in a request line and never lands in an access log or a referrer header.
+  function boardKeyFromHash(hash) {
+    var text = String(hash || "");
+    if (text.charAt(0) === "#") text = text.slice(1);
+    var parts = text.split("&");
+    for (var i = 0; i < parts.length; i++) {
+      var eq = parts[i].indexOf("=");
+      if (eq === -1) continue;
+      if (parts[i].slice(0, eq) !== "t") continue;
+      try {
+        return decodeURIComponent(parts[i].slice(eq + 1));
+      } catch (e) {
+        return parts[i].slice(eq + 1);
+      }
+    }
+    return "";
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // The one request
+  // -------------------------------------------------------------------------------------------
+
+  function fetchBoard(key) {
+    return fetch(SB_URL + RPC_PATH, {
+      method: "POST",
+      headers: {
+        apikey: SB_ANON_KEY,
+        // The anon role, not a person. There is no sign-in on this device and no session to hold.
+        Authorization: "Bearer " + SB_ANON_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ board_key: key })
+    }).then(function (res) {
+      if (!res.ok) return { ok: false, error: "unreachable" };
+      return res.json();
+    });
+  }
+
+  // -------------------------------------------------------------------------------------------
+  // Mounting
+  // -------------------------------------------------------------------------------------------
+
+  function clear(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+  }
+
+  function setStatus(node, state, message) {
+    node.setAttribute("data-state", state);
+    node.textContent = message;
+    node.hidden = false;
+  }
+
+  function viewerDate(now) {
+    return WEEKDAYS[now.getDay()] + " " + now.getDate() + " " + MONTHS[now.getMonth()];
+  }
+
+  function displayTimezone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  // The board record carries what the OWNER chose to show. The wall chooses nothing: it has no
+  // settings, no menu and nobody in front of it with the standing to decide.
+  function optionsFrom(board, now) {
+    var components = (board && board.components) || {};
+    var metrics = components.metrics;
+    return {
+      metrics: Object.prototype.toString.call(metrics) === "[object Array]" && metrics.length
+        ? metrics
+        : ["score"],
+      accumulation: typeof components.accumulation === "string" ? components.accumulation : "line",
+      now: now,
+      tz: displayTimezone()
+    };
+  }
+
+  function paint(root, payload, now) {
+    var boardNode = root.querySelector(".omx-wall-board");
+    var statusNode = root.querySelector(".omx-wall-status");
+    var dateNode = root.querySelector(".omx-wall-foot-date");
+
+    dateNode.textContent = viewerDate(now);
+    clear(boardNode);
+
+    if (!payload || payload.ok !== true) {
+      setStatus(statusNode, "error", "This display link is not valid. Ask for a new one.");
+      return;
+    }
+
+    var people = payload.people || [];
+    if (!people.length) {
+      setStatus(statusNode, "empty", "Nobody has shared anything with this display yet.");
+      return;
+    }
+
+    statusNode.hidden = true;
+
+    // Server order, which is the board owner's stored position order. NEVER sorted by score:
+    // ordering by number is ranking by another name, and the wall does not rank.
+    var opts = optionsFrom(payload.board, now);
+
+    // The accumulation curve is scaled ACROSS THE BOARD, so the ceiling has to be taken once over
+    // the whole people list - and this file is the only one that ever holds the whole list. The
+    // arithmetic itself lives in views-tile.js, where the chart lives; this is a hand-off, not a
+    // second implementation, and it is not scoring: it reads the already-published series the
+    // server sent and takes a maximum for a chart axis.
+    //
+    // A shared scale is NOT a ranking device. The tiles stay in the board's stored order, styled
+    // identically, with no highlight on the tallest line and no target drawn on anybody's tile.
+    opts.sparkTop = window.OpsMatrix.wall.sparkScale(people);
+
+    for (var i = 0; i < people.length; i++) {
+      boardNode.appendChild(window.OpsMatrix.wall.renderTile(people[i], opts));
+    }
+  }
+
+  function start() {
+    var root = document.querySelector(".omx-wall");
+    if (!root) return;
+    var statusNode = root.querySelector(".omx-wall-status");
+    var now = new Date();
+    var key = boardKeyFromHash(window.location.hash);
+
+    if (!key) {
+      root.querySelector(".omx-wall-foot-date").textContent = viewerDate(now);
+      setStatus(statusNode, "error", "This display link is missing its key.");
+      return;
+    }
+
+    setStatus(statusNode, "loading", "Loading the board.");
+
+    // One request. No retry loop and no interval: a wall is refreshed by reloading it.
+    fetchBoard(key).then(
+      function (payload) {
+        paint(root, payload, new Date());
+      },
+      function () {
+        paint(root, { ok: false }, new Date());
+      }
+    );
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
+</script>
+</body>
+</html>
